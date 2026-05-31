@@ -1,0 +1,35 @@
+{
+  "name": "PR Manager",
+  "short_name": "PR Manager",
+  "description": "Gestionale per PR di locali notturni: gruppi clienti, acconti, eventi e check-in ospiti.",
+  "start_url": "/pr-manager/index.html",
+  "scope": "/pr-manager/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#08080F",
+  "theme_color": "#08080F",
+  "lang": "it",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%2308080F'/%3E%3Ccircle cx='256' cy='210' r='80' fill='none' stroke='%23C9A84C' stroke-width='24'/%3E%3Cpath d='M144 370 Q256 450 368 370' fill='none' stroke='%23C9A84C' stroke-width='24' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nuova Lista Ospiti",
+      "short_name": "Liste",
+      "description": "Apri la gestione liste ospiti",
+      "url": "/pr-manager/index.html#liste"
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Vai alla dashboard principale",
+      "url": "/pr-manager/index.html#dashboard"
+    }
+  ]
+}
