@@ -1,0 +1,3497 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PR Manager</title>
+  <meta name="description" content="Gestionale professionale per PR: gruppi clienti, acconti ed eventi">
+  <meta name="theme-color" content="#08080F">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PR Manager">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2308080F'/%3E%3Ccircle cx='32' cy='26' r='10' fill='none' stroke='%23C9A84C' stroke-width='3'/%3E%3Cpath d='M18 46 Q32 56 46 46' fill='none' stroke='%23C9A84C' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+
+  <style>
+    /* ── Design System Variables ────────────────────────────── */
+    :root {
+      --bg:        #060610;
+      --bg1:       #0A0A18;
+      --bg2:       #0E0E20;
+      --bg3:       #141428;
+      --bg4:       #1C1C34;
+      --bg5:       #22223E;
+      --border:    rgba(255,255,255,0.06);
+      --border-hi: rgba(255,255,255,0.12);
+      --border-glow: rgba(201,168,76,0.25);
+      --glass:     rgba(255,255,255,0.03);
+      --glass-hi:  rgba(255,255,255,0.055);
+      --gold:      #C9A84C;
+      --gold2:     #E2C06A;
+      --gold-lo:   rgba(201,168,76,0.07);
+      --gold-md:   rgba(201,168,76,0.16);
+      --gold-hi:   rgba(201,168,76,0.28);
+      --text:      #EDE9E0;
+      --text2:     #8E8CA8;
+      --text3:     #4E4C66;
+      --success:   #4ECDA4;
+      --success-bg:rgba(78,205,164,0.09);
+      --warn:      #F9A825;
+      --warn-bg:   rgba(249,168,37,0.09);
+      --danger:    #F06060;
+      --danger-bg: rgba(240,96,96,0.09);
+      --info:      #4FA3E8;
+      --info-bg:   rgba(79,163,232,0.09);
+      --violet:    #9B7EF8;
+      --violet-bg: rgba(155,126,248,0.09);
+      --r-xs: 4px;
+      --r-sm: 7px;
+      --r-md: 12px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+      --r-2xl:32px;
+      --font-h: 'Playfair Display', Georgia, serif;
+      --font-b: 'DM Sans', system-ui, sans-serif;
+      --font-m: 'DM Mono', monospace;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+      --shadow:    0 4px 24px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.4);
+      --shadow-lg: 0 8px 48px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.5);
+      --glow-gold: 0 0 20px rgba(201,168,76,0.18);
+    }
+
+    /* ── Reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-b); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    input, select, textarea, button { font-family: inherit; font-size: inherit; color: inherit; }
+
+    /* ── Ambient background orbs ───────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 700px 400px at 15% 10%, rgba(155,126,248,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 300px at 85% 80%, rgba(201,168,76,0.055) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 350px at 60% 30%, rgba(79,163,232,0.04) 0%, transparent 70%);
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    #app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative; z-index: 1; }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .app-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 0 22px; height: 56px; flex-shrink: 0;
+      background: rgba(10,10,24,0.85);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .logo-icon {
+      width: 32px; height: 32px; border-radius: var(--r-sm);
+      background: linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06));
+      border: 1px solid rgba(201,168,76,0.3);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-size: 15px; flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(201,168,76,0.15);
+    }
+    .logo-text { font-family: var(--font-h); font-size: 17px; font-weight: 700; letter-spacing: .01em; }
+    .logo-text em { color: var(--gold); font-style: normal; }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+    #save-status { font-size: 10px; color: var(--text3); min-width: 60px; text-align: right; letter-spacing: .04em; }
+
+    /* ── Nav ────────────────────────────────────────────────── */
+    .app-nav {
+      display: flex; gap: 0; padding: 0 16px;
+      background: rgba(10,10,24,0.75);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      flex-shrink: 0; overflow-x: auto;
+    }
+    .app-nav::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      display: flex; align-items: center; gap: 7px; padding: 0 16px; height: 44px;
+      background: none; border: none; cursor: pointer; font-size: 12.5px;
+      font-weight: 400; color: var(--text3); border-bottom: 2px solid transparent;
+      margin-bottom: -1px; white-space: nowrap;
+      transition: color .2s, background .2s;
+      border-radius: var(--r-sm) var(--r-sm) 0 0;
+      position: relative;
+    }
+    .tab-btn:hover { color: var(--text2); background: var(--glass); }
+    .tab-btn.active {
+      color: var(--gold); border-bottom-color: var(--gold); font-weight: 500;
+      background: linear-gradient(180deg, rgba(201,168,76,0.06) 0%, transparent 100%);
+    }
+    .tab-btn i { font-size: 15px; }
+
+    /* ── Content ────────────────────────────────────────────── */
+    #content { flex: 1; overflow-y: auto; padding: 22px; scroll-behavior: smooth; }
+    #content::-webkit-scrollbar { width: 4px; }
+    #content::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+    /* ── Cards ──────────────────────────────────────────────── */
+    .card {
+      background: var(--glass);
+      background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px 22px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-sm);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .card:hover { border-color: var(--border-hi); }
+    .card-title { font-family: var(--font-h); font-size: 14.5px; font-weight: 500; margin-bottom: 16px; letter-spacing: .01em; }
+
+    /* ── Metric Tiles ─────────────────────────────────────────── */
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px; margin-bottom: 18px; }
+    .metric-tile {
+      background: linear-gradient(135deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.018) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 16px 18px 14px;
+      position: relative; overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .metric-tile::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--m-accent, var(--gold));
+      opacity: .55; border-radius: var(--r-md) var(--r-md) 0 0;
+    }
+    .metric-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--border-hi); }
+    .metric-tile:active { transform: translateY(0); }
+    .metric-tile .m-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .metric-tile .m-icon-wrap {
+      width: 30px; height: 30px; border-radius: var(--r-sm);
+      background: var(--m-icon-bg, var(--gold-lo));
+      display: flex; align-items: center; justify-content: center;
+    }
+    .metric-tile .m-icon { color: var(--m-accent, var(--gold)); font-size: 15px; }
+    .metric-tile .m-val { font-family: var(--font-m); font-size: 22px; font-weight: 500; line-height: 1; letter-spacing: -.01em; }
+    .metric-tile .m-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-top: 5px; }
+    .metric-tile .m-sub { font-size: 10.5px; color: var(--text3); margin-top: 3px; }
+    .metric-tile .m-trend {
+      font-size: 10px; font-family: var(--font-m);
+      background: var(--success-bg); color: var(--success);
+      border-radius: 999px; padding: 1px 7px;
+    }
+
+    /* ── Buttons ────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 15px; border-radius: var(--r-sm); font-size: 12.5px; font-weight: 500;
+      cursor: pointer; border: none;
+      transition: transform .15s, opacity .15s, box-shadow .15s;
+      white-space: nowrap; position: relative; overflow: hidden;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: .9; }
+    .btn:active { transform: translateY(0); }
+    .btn i { font-size: 14px; }
+    .btn-primary {
+      background: linear-gradient(135deg, #C9A84C, #B8952A);
+      color: #08080F;
+      box-shadow: 0 2px 10px rgba(201,168,76,0.25);
+    }
+    .btn-primary:hover { box-shadow: 0 4px 16px rgba(201,168,76,0.35); }
+    .btn-secondary { background: var(--bg3); border: 1px solid var(--border-hi); color: var(--text2); }
+    .btn-secondary:hover { background: var(--bg4); color: var(--text); }
+    .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text2); }
+    .btn-ghost:hover { border-color: var(--border-hi); color: var(--text); opacity: 1; transform: none; }
+    .btn-danger { background: var(--danger-bg); border: 1px solid rgba(240,96,96,.18); color: var(--danger); }
+    .btn-danger:hover { background: rgba(240,96,96,.18); }
+    .btn-success-sm { background: var(--success-bg); border: 1px solid rgba(78,205,164,.18); color: var(--success); font-size: 11.5px; padding: 4px 11px; }
+    .btn-icon {
+      background: none; border: none; cursor: pointer; color: var(--text3);
+      display: inline-flex; align-items: center; padding: 6px 7px; border-radius: var(--r-sm);
+      transition: color .15s, background .15s, transform .15s;
+    }
+    .btn-icon:hover { color: var(--text); background: var(--bg4); transform: scale(1.08); }
+    .btn-icon:active { transform: scale(.95); }
+    .btn-icon.danger:hover { color: var(--danger); background: var(--danger-bg); }
+    .btn-icon i { font-size: 15px; }
+
+    /* ── Badges ─────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 600;
+      letter-spacing: .02em;
+    }
+    .badge-green   { background: var(--success-bg); color: var(--success); border: 1px solid rgba(78,205,164,.15); }
+    .badge-amber   { background: var(--warn-bg);    color: var(--warn);    border: 1px solid rgba(249,168,37,.15); }
+    .badge-red     { background: var(--danger-bg);  color: var(--danger);  border: 1px solid rgba(240,96,96,.15); }
+    .badge-blue    { background: var(--info-bg);    color: var(--info);    border: 1px solid rgba(79,163,232,.15); }
+    .badge-violet  { background: var(--violet-bg);  color: var(--violet);  border: 1px solid rgba(155,126,248,.15); }
+    .badge-neutral { background: var(--bg4);        color: var(--text2);   border: 1px solid var(--border); }
+
+    /* ── Forms ──────────────────────────────────────────────── */
+    .field-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); display: block; margin-bottom: 6px; font-weight: 500; }
+    .field {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 9px 12px;
+      color: var(--text); font-size: 13px; outline: none;
+      transition: border-color .18s, box-shadow .18s; resize: vertical;
+    }
+    .field:focus { border-color: rgba(201,168,76,0.4); box-shadow: 0 0 0 3px rgba(201,168,76,0.07); }
+    .field::placeholder { color: var(--text3); }
+    select.field option { background: var(--bg2); }
+    .field-checkbox { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .field-checkbox input { accent-color: var(--gold); cursor: pointer; width: 15px; height: 15px; }
+
+    /* ── Table ──────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 10px 13px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); font-weight: 600; border-bottom: 1px solid var(--border); }
+    th:hover { color: var(--text2); cursor: pointer; }
+    td { padding: 12px 13px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .14s; }
+    tbody tr:hover td { background: rgba(255,255,255,0.022); }
+
+    /* status stripe on acconto rows */
+    .acc-row-confirmed td:first-child { box-shadow: inset 3px 0 0 var(--success); }
+    .acc-row-pending   td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+    .acc-row-cancelled td:first-child { box-shadow: inset 3px 0 0 var(--danger); opacity: .65; }
+
+    /* ── Row Items ──────────────────────────────────────────── */
+    .row-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      transition: background .13s; border-radius: var(--r-sm);
+    }
+    .row-item:last-child { border-bottom: none; }
+    .row-item:hover { background: var(--glass-hi); padding-left: 6px; padding-right: 6px; margin: 0 -6px; }
+
+    /* ── Sidebar items ──────────────────────────────────────── */
+    .sidebar-item {
+      padding: 10px 12px; border-radius: var(--r-md); cursor: pointer;
+      margin-bottom: 4px; border: 1px solid transparent;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+    .sidebar-item:hover { background: var(--glass-hi); transform: translateX(2px); }
+    .sidebar-item.active {
+      background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.04) 100%);
+      border-color: var(--gold-md);
+    }
+    .sidebar-item .si-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+
+    /* ── Filter Pills ───────────────────────────────────────── */
+    .filter-bar { display: flex; gap: 5px; flex-wrap: wrap; }
+    .filter-pill {
+      background: none; border: 1px solid var(--border); border-radius: 999px;
+      padding: 4px 14px; font-size: 12px; cursor: pointer; color: var(--text2);
+      transition: all .15s;
+    }
+    .filter-pill:hover { border-color: var(--border-hi); color: var(--text); background: var(--glass); }
+    .filter-pill.active { background: var(--gold); border-color: var(--gold); color: #08080F; font-weight: 600; box-shadow: 0 2px 10px rgba(201,168,76,0.25); }
+
+    /* ── Avatar ─────────────────────────────────────────────── */
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06));
+      border: 1px solid rgba(201,168,76,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--gold); flex-shrink: 0;
+      letter-spacing: .02em;
+    }
+
+    /* ── Search ─────────────────────────────────────────────── */
+    .search-wrap { position: relative; }
+    .search-wrap .search-ico { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; pointer-events: none; }
+    .search-wrap .field { padding-left: 33px; }
+
+    /* ── Bar Chart ──────────────────────────────────────────── */
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .bar-label { width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--text2); flex-shrink: 0; }
+    .bar-track { flex: 1; background: var(--bg4); border-radius: 999px; height: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 999px; transition: width .7s cubic-bezier(.4,0,.2,1); }
+    .bar-value { font-family: var(--font-m); font-size: 11px; color: var(--text3); flex-shrink: 0; width: 65px; text-align: right; }
+
+    /* ── Capacity ───────────────────────────────────────────── */
+    .cap-bar { height: 3px; background: var(--bg5); border-radius: 999px; overflow: hidden; margin-top: 5px; }
+    .cap-fill { height: 100%; border-radius: 999px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+    /* ── Empty State ────────────────────────────────────────── */
+    .empty { text-align: center; padding: 44px 20px; color: var(--text3); }
+    .empty-icon-wrap {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .empty-icon-wrap i { font-size: 24px; opacity: .35; }
+    .empty p { font-size: 13px; line-height: 1.6; }
+    .empty .empty-cta { margin-top: 14px; }
+
+    /* ── Divider ────────────────────────────────────────────── */
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ── Toast ──────────────────────────────────────────────── */
+    #toasts { position: fixed; bottom: 22px; right: 22px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; pointer-events: none; }
+    .toast {
+      background: rgba(14,14,32,0.92); border: 1px solid var(--border-hi);
+      border-radius: var(--r-md); padding: 11px 16px; font-size: 13px;
+      display: flex; align-items: center; gap: 9px; box-shadow: var(--shadow);
+      pointer-events: auto; animation: tin .28s cubic-bezier(.34,1.56,.64,1);
+      backdrop-filter: blur(12px);
+    }
+    .toast.success i { color: var(--success); }
+    .toast.error   i { color: var(--danger); }
+    .toast.info    i { color: var(--info); }
+    .toast.warn    { background: rgba(249,168,37,0.1); border-color: rgba(249,168,37,0.2); color: var(--warn); }
+    .toast.warn i  { color: var(--warn); }
+    @keyframes tin  { from { opacity:0; transform:translateY(10px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes tout { to   { opacity:0; transform:translateY(8px) scale(.96); } }
+
+    /* ── Modal ──────────────────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.76); z-index: 900;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      animation: fadeIn .2s ease;
+    }
+    .modal-box {
+      background: linear-gradient(135deg, rgba(16,16,30,0.98), rgba(12,12,24,0.98));
+      border: 1px solid var(--border-hi); border-radius: var(--r-xl); padding: 30px;
+      max-width: 460px; width: 92%;
+      box-shadow: var(--shadow-lg), 0 0 50px rgba(201,168,76,0.08);
+      animation: slideUp .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .modal-title { font-family: var(--font-h); font-size: 21px; font-weight: 600; }
+    @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+    @keyframes slideUp { from { opacity:0; transform:translateY(16px) scale(.97); } to { opacity:1; transform:none; } }
+
+    /* ── Vacation chip ──────────────────────────────────────── */
+    .vac-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, rgba(155,126,248,0.08), rgba(155,126,248,0.04));
+      border: 1px solid rgba(155,126,248,0.16);
+      border-radius: var(--r-sm); padding: 8px 12px; margin-bottom: 6px;
+    }
+    .vac-chip .vac-dates { font-family: var(--font-m); font-size: 12px; color: var(--violet); }
+    .vac-chip .vac-note { font-size: 12px; color: var(--text2); }
+
+    /* ── Quick Actions row (dashboard) ─────────────────────── */
+    .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .quick-action-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 10px 16px; cursor: pointer;
+      transition: all .18s; color: var(--text2); font-size: 13px; font-weight: 500;
+    }
+    .quick-action-btn:hover { background: var(--glass-hi); border-color: var(--border-hi); color: var(--text); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .quick-action-btn i { font-size: 16px; }
+    .quick-action-btn .qa-label { font-size: 12px; }
+
+    /* ── Utilities ──────────────────────────────────────────── */
+    .flex            { display: flex; }
+    .flex-col        { display: flex; flex-direction: column; }
+    .items-center    { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-end     { justify-content: flex-end; }
+    .gap-2           { gap: 8px; }
+    .gap-3           { gap: 12px; }
+    .gap-4           { gap: 16px; }
+    .mb-2            { margin-bottom: 8px; }
+    .mb-3            { margin-bottom: 12px; }
+    .mb-4            { margin-bottom: 16px; }
+    .mb-5            { margin-bottom: 20px; }
+    .mt-3            { margin-top: 12px; }
+    .ml-auto         { margin-left: auto; }
+    .w-full          { width: 100%; }
+    .min-w-0         { min-width: 0; }
+    .truncate        { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .text-sm         { font-size: 12px; }
+    .text-xs         { font-size: 11px; }
+    .text-muted      { color: var(--text2); }
+    .text-dim        { color: var(--text3); }
+    .text-gold       { color: var(--gold); }
+    .text-success    { color: var(--success); }
+    .text-danger     { color: var(--danger); }
+    .text-violet     { color: var(--violet); }
+    .font-medium     { font-weight: 500; }
+    .font-bold       { font-weight: 700; }
+    .text-mono       { font-family: var(--font-m); }
+    .text-head       { font-family: var(--font-h); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 13px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 11px; }
+    .form-bg { background: rgba(255,255,255,0.025); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px; margin-bottom: 12px; }
+
+    @media(max-width:640px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      #content { padding: 14px 12px 80px; }
+      .hide-mobile { display: none !important; }
+      .amt-row, .amt-row-head { grid-template-columns: 1fr 100px 100px; gap: 6px; }
+      /* Mobile bottom nav */
+      .app-nav { display: none; }
+      .mobile-nav {
+        display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+        background: rgba(10,10,24,0.96); border-top: 1px solid var(--border);
+        backdrop-filter: blur(16px); z-index: 500; padding: 6px 0 env(safe-area-inset-bottom,6px);
+      }
+      .mobile-nav-btn {
+        flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+        background: none; border: none; cursor: pointer; padding: 6px 0;
+        color: var(--text3); font-size: 9.5px; font-weight: 500; text-transform: uppercase;
+        letter-spacing: .05em; transition: color .15s;
+      }
+      .mobile-nav-btn i { font-size: 20px; }
+      .mobile-nav-btn.active { color: var(--gold); }
+    }
+    @media(min-width:641px) { .mobile-nav { display: none; } }
+
+    /* ── Weekly Calendar ────────────────────────────────────── */
+    .week-nav { display: flex; align-items: center; gap: 10px; }
+    .week-nav .week-title { font-family: var(--font-h); font-size: 15px; font-weight: 500; min-width: 220px; text-align: center; }
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 12px; align-items: start; }
+    .week-col-header { text-align: center; padding: 8px 4px 10px; border-bottom: 2px solid var(--border); }
+    .week-col-header .day-name { font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); }
+    .week-col-header .day-num { font-family: var(--font-m); font-size: 19px; font-weight: 500; margin-top: 3px; line-height: 1; }
+    .week-col-header.today .day-num {
+      background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #08080F;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin: 3px auto 0;
+      font-size: 14px; box-shadow: 0 2px 10px rgba(201,168,76,0.3);
+    }
+    .week-col-header.today .day-name { color: var(--gold); }
+    .week-col { min-height: 80px; }
+    .week-event-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      padding: 8px 9px; margin-bottom: 6px; cursor: pointer;
+      transition: border-color .15s, background .15s, transform .15s;
+      position: relative; overflow: hidden;
+    }
+    .week-event-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+    .week-event-card.status-available::before { background: var(--warn); }
+    .week-event-card.status-paid::before      { background: var(--success); }
+    .week-event-card.series::before           { background: var(--violet); }
+    .week-event-card:hover { border-color: var(--border-hi); background: rgba(255,255,255,0.055); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .week-event-card .ev-name { font-size: 11.5px; font-weight: 500; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .week-event-card .ev-venue { font-size: 10px; color: var(--text3); margin-top: 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .week-event-card .ev-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+    .week-event-card .ev-price { font-family: var(--font-m); font-size: 10.5px; color: var(--gold); }
+    .week-event-card .ev-occ   { font-size: 10px; color: var(--text3); }
+    .week-event-card .ev-cap-bar { height: 2px; background: var(--bg5); border-radius: 999px; margin-top: 4px; overflow: hidden; }
+    .week-event-card .ev-cap-fill { height: 100%; border-radius: 999px; }
+    .week-empty-day { color: var(--text3); font-size: 11px; text-align: center; padding: 14px 0; opacity: .4; }
+
+    /* ── Month separator ────────────────────────────────────── */
+    .month-separator {
+      padding: 10px 14px 6px; font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .09em; color: var(--text3);
+      background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .month-separator::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ── View toggle ────────────────────────────────────────── */
+    .view-toggle { display: flex; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r-sm); overflow: hidden; }
+    .view-toggle-btn { background: none; border: none; cursor: pointer; padding: 6px 12px; color: var(--text3); font-size: 12.5px; display: flex; align-items: center; gap: 5px; transition: background .13s, color .13s; }
+    .view-toggle-btn:hover { background: var(--bg4); color: var(--text2); }
+    .view-toggle-btn.active { background: var(--bg4); color: var(--gold); }
+    .view-toggle-btn i { font-size: 14px; }
+
+    /* ── Event row ──────────────────────────────────────────── */
+    .evt-row-name { display: flex; align-items: center; gap: 7px; }
+    .series-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); flex-shrink: 0; }
+
+    /* ── Event Modal ────────────────────────────────────────── */
+    .evt-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.84);
+      z-index: 950; display: flex; align-items: flex-start; justify-content: center;
+      padding: 20px 16px; overflow-y: auto; backdrop-filter: blur(8px);
+      animation: fadeIn .18s ease;
+    }
+    .evt-modal {
+      background: linear-gradient(160deg, rgba(14,14,28,0.99), rgba(10,10,20,0.99));
+      border: 1px solid var(--border-hi); border-radius: var(--r-xl);
+      width: 100%; max-width: 780px;
+      box-shadow: var(--shadow-lg), 0 0 80px rgba(201,168,76,0.06);
+      flex-shrink: 0; animation: slideUp .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .evt-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 26px 18px; border-bottom: 1px solid var(--border);
+    }
+    .evt-modal-body { padding: 22px 26px; }
+    .evt-modal-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 26px; border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.02); border-radius: 0 0 var(--r-xl) var(--r-xl);
+    }
+    .section-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--gold); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .section-title::after { content:''; flex:1; height:1px; background:var(--gold-md); }
+    .section-block { margin-bottom: 24px; }
+    .color-swatch { width: 28px; height: 28px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; transition: transform .12s, border-color .12s; }
+    .color-swatch:hover { transform: scale(1.12); }
+    .color-swatch.active { border-color: var(--text); transform: scale(1.15); box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+    .status-chip {
+      display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+      border-radius: var(--r-sm); border: 1px solid var(--border); cursor: pointer;
+      font-size: 12px; font-weight: 500; transition: all .14s;
+    }
+    .status-chip:hover { border-color: var(--border-hi); background: var(--glass); }
+    .status-chip.active-chip { border-width: 2px; }
+    .status-chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink:0; }
+    tr.evt-selected td { background: rgba(201,168,76,0.05) !important; }
+    tr.evt-selected td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
+
+    @media(max-width:640px) {
+      .evt-modal-overlay { padding: 0; align-items: flex-end; }
+      .evt-modal { border-radius: var(--r-xl) var(--r-xl) 0 0; max-height: 92vh; overflow-y: auto; }
+    }
+
+    /* ── Multi-event acconto form ───────────────────────────── */
+    .evt-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border); background: none;
+      color: var(--text2); transition: all .14s; white-space: nowrap;
+    }
+    .evt-chip:hover { border-color: var(--border-hi); color: var(--text); background: var(--glass); }
+    .evt-chip.selected { background: var(--gold-md); border-color: var(--gold); color: var(--gold); }
+    .evt-chip .chip-date { font-size: 10px; opacity: .7; }
+    .amt-row { display: grid; grid-template-columns: 1fr 140px 140px; gap: 10px; padding: 11px 14px; border-bottom: 1px solid var(--border); align-items: center; }
+    .amt-row:last-child { border-bottom: none; }
+    .amt-row-head { display: grid; grid-template-columns: 1fr 140px 140px; gap: 10px; padding: 7px 14px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); }
+    .step-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--gold); margin-bottom: 9px; display: flex; align-items: center; gap: 6px; }
+    .step-label::after { content:''; flex:1; height:1px; background:var(--gold-md); }
+
+    /* ── Author Credit ──────────────────────────────────────── */
+    #author-credit {
+      position: fixed; bottom: 10px; right: 16px; font-size: 9.5px; font-weight: 600;
+      color: var(--text3); letter-spacing: .07em; text-transform: uppercase;
+      pointer-events: none; z-index: 800; opacity: .4; font-family: var(--font-m); user-select: none;
+    }
+    @media(max-width:640px){ #author-credit { display:none; } }
+
+    /* ── Pacchetti ────────────────────────────────────────────── */
+    .pkg-item { padding:10px 12px; border-radius:var(--r-md); cursor:pointer; margin-bottom:4px; border:1px solid transparent; transition:background .15s,border-color .15s; }
+    .pkg-item:hover { background:var(--glass-hi); }
+    .pkg-item.pkg-sel { background:linear-gradient(135deg,rgba(201,168,76,.09) 0%,rgba(201,168,76,.03) 100%); border-color:var(--gold-md); }
+    .pkg-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r-md); padding:13px 15px; margin-bottom:10px; }
+    .pkg-block-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--gold); margin-bottom:9px; display:flex; align-items:center; gap:6px; }
+    .pren-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+    .pren-row:last-child { border-bottom:none; }
+    .stat-chip { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 14px; text-align:center; }
+    .stat-chip .sc-val { font-family:var(--font-m); font-size:20px; font-weight:500; line-height:1.2; }
+    .stat-chip .sc-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--text3); margin-top:3px; }
+    /* ── Liste Ospiti ─────────────────────────────────────────── */
+    .ospite-row { display:grid; grid-template-columns:1fr 90px 90px auto; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid var(--border); transition:background .12s; }
+    .ospite-row:last-child { border-bottom:none; }
+    .ospite-row:hover { background:var(--glass-hi); }
+    .ospite-row.st-entrato  { border-left:3px solid var(--success); padding-left:9px; }
+    .ospite-row.st-no-show  { border-left:3px solid var(--danger);  padding-left:9px; opacity:.65; }
+    .ospite-row.st-attesa   { border-left:3px solid var(--warn);    padding-left:9px; }
+    .checkin-btn { background:var(--success-bg); border:1px solid rgba(78,205,164,.18); color:var(--success); border-radius:var(--r-sm); padding:4px 10px; font-size:11.5px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:background .14s; white-space:nowrap; }
+    .checkin-btn:hover { background:rgba(78,205,164,.18); }
+    .evt-pill { display:block; width:100%; padding:9px 12px; border-radius:var(--r-md); cursor:pointer; border:1px solid var(--border); background:none; font-size:13px; color:var(--text2); transition:all .14s; text-align:left; margin-bottom:5px; }
+    .evt-pill:hover { border-color:var(--border-hi); color:var(--text); background:var(--glass); }
+    .evt-pill.ev-active { border-color:var(--gold); background:var(--gold-lo); color:var(--gold); }
+    .fill-bar { height:5px; border-radius:999px; overflow:hidden; background:var(--bg4); margin-bottom:14px; }
+    .fill-bar-inner { height:100%; border-radius:999px; transition:width .5s; }
+
+    /* ── Settings ─────────────────────────────────────────────── */
+    .settings-layout { display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:start; }
+    .settings-nav { background:var(--glass); border:1px solid var(--border); border-radius:var(--r-lg); padding:10px; position:sticky; top:0; }
+    .settings-nav-item {
+      display:flex; align-items:center; gap:9px; padding:9px 12px;
+      border-radius:var(--r-sm); cursor:pointer; font-size:13px; font-weight:400;
+      color:var(--text2); border:1px solid transparent; transition:all .14s; margin-bottom:2px;
+    }
+    .settings-nav-item:hover { color:var(--text); background:var(--glass-hi); }
+    .settings-nav-item.active { color:var(--gold); background:var(--gold-lo); border-color:var(--gold-md); font-weight:500; }
+    .settings-nav-item i { font-size:15px; flex-shrink:0; }
+    .settings-section { background:var(--glass); border:1px solid var(--border); border-radius:var(--r-lg); padding:24px; }
+    .settings-title { font-family:var(--font-h); font-size:18px; font-weight:600; margin-bottom:4px; }
+    .settings-subtitle { font-size:12px; color:var(--text3); margin-bottom:22px; }
+    .settings-group { margin-bottom:28px; }
+    .settings-group:last-child { margin-bottom:0; }
+    .settings-group-title {
+      font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.09em;
+      color:var(--gold); margin-bottom:12px; display:flex; align-items:center; gap:7px;
+    }
+    .settings-group-title::after { content:''; flex:1; height:1px; background:var(--gold-md); }
+    .setting-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 14px; border-radius:var(--r-md); border:1px solid var(--border);
+      margin-bottom:6px; background:var(--bg2); transition:border-color .14s;
+      cursor:pointer;
+    }
+    .setting-row:hover { border-color:var(--border-hi); }
+    .setting-row-info { min-width:0; }
+    .setting-row-label { font-size:13px; font-weight:500; }
+    .setting-row-desc  { font-size:11px; color:var(--text3); margin-top:1px; }
+    /* Toggle switch */
+    .toggle-wrap { flex-shrink:0; margin-left:16px; }
+    .toggle { position:relative; width:38px; height:21px; display:block; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-track {
+      position:absolute; inset:0; border-radius:999px;
+      background:var(--bg4); border:1px solid var(--border-hi);
+      transition:background .2s, border-color .2s; cursor:pointer;
+    }
+    .toggle-thumb {
+      position:absolute; top:3px; left:3px;
+      width:13px; height:13px; border-radius:50%;
+      background:var(--text3); transition:transform .2s, background .2s;
+    }
+    .toggle input:checked + .toggle-track { background:var(--gold); border-color:var(--gold); }
+    .toggle input:checked + .toggle-track .toggle-thumb { transform:translateX(17px); background:#08080F; }
+    .settings-reset-bar { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--danger-bg); border:1px solid rgba(240,96,96,.2); border-radius:var(--r-md); margin-top:24px; }
+
+    @media(max-width:640px) {
+      .settings-layout { grid-template-columns:1fr; }
+      .settings-nav { position:static; display:flex; overflow-x:auto; gap:4px; }
+      .settings-nav-item { white-space:nowrap; }
+      .settings-nav-item i { display:none; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header class="app-header">
+    <div class="logo-icon"><i class="ti ti-crown"></i></div>
+    <span class="logo-text">PR <em>Manager</em></span>
+    <div class="header-right">
+      <span id="save-status"></span>
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px;color:var(--danger);border-color:rgba(248,113,113,0.3)" onclick="resetData()" title="Cancella tutti i dati">
+        <i class="ti ti-trash" style="font-size:14px"></i><span class="hide-mobile">Svuota</span>
+      </button>
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="importData()" title="Importa backup JSON">
+        <i class="ti ti-upload" style="font-size:14px"></i><span class="hide-mobile">Importa</span>
+      </button>
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="exportData()" title="Esporta backup JSON">
+        <i class="ti ti-download" style="font-size:14px"></i><span class="hide-mobile">Backup</span>
+      </button>
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="showInstallModal()">
+        <i class="ti ti-device-desktop" style="font-size:14px"></i><span class="hide-mobile">Installa</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="app-nav" id="nav">
+    <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+    <button class="tab-btn" data-tab="gruppi"    onclick="switchTab('gruppi')">  <i class="ti ti-users"></i>Gruppi</button>
+    <button class="tab-btn" data-tab="acconti"   onclick="switchTab('acconti')"> <i class="ti ti-receipt"></i>Acconti</button>
+    <button class="tab-btn" data-tab="eventi"    onclick="switchTab('eventi')">  <i class="ti ti-calendar-event"></i>Eventi</button>
+    <button class="tab-btn" data-tab="stats"     onclick="switchTab('stats')">   <i class="ti ti-chart-bar"></i>Statistiche</button>
+    <button class="tab-btn" data-tab="pacchetti" onclick="switchTab('pacchetti')"><i class="ti ti-package"></i>Pacchetti</button>
+    <button class="tab-btn" data-tab="liste"     onclick="switchTab('liste')">   <i class="ti ti-list-check"></i>Liste</button>
+    <button class="tab-btn" data-tab="settings"  onclick="switchTab('settings')" style="margin-left:auto"><i class="ti ti-settings"></i>Impostazioni</button>
+  </nav>
+
+  <main id="content"></main>
+</div>
+
+<!-- hidden file input for import -->
+<input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(event)">
+
+<div id="toasts"></div>
+<div id="modal-root"></div>
+<div id="author-credit">Alessandro Sequino</div>
+
+<script>
+/* ── Helpers ──────────────────────────────────────────────── */
+const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+const eur  = n  => new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(+n||0);
+const dat  = d  => d ? new Date(d+'T12:00').toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const pct  = (a,b) => b > 0 ? Math.min(100, Math.round(a/b*100)) : 0;
+const ini  = s  => (s||'?').trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const esc  = s  => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const val  = id => document.getElementById(id)?.value ?? '';
+
+/* ── Storage (localStorage + artifact fallback) ───────────── */
+const Store = {
+  async get(k) {
+    try {
+      if(window.storage) return window.storage.get(k);
+      const v = localStorage.getItem(k);
+      return v ? {value:v} : null;
+    } catch(e){ return null; }
+  },
+  async set(k,v) {
+    try {
+      if(window.storage) return window.storage.set(k,v);
+      localStorage.setItem(k,v); return true;
+    } catch(e){ return null; }
+  }
+};
+
+/* ── Settings Config ──────────────────────────────────────── */
+const CFG_DEFAULTS = {
+  // ── Sezioni tab visibili nella navbar
+  tabs: {
+    dashboard: true, gruppi: true, acconti: true, eventi: true,
+    stats: true, pacchetti: true, liste: true,
+  },
+  // ── Dashboard widget
+  dash: {
+    metricGruppi: true, metricEventi: true, metricIncasso: true,
+    metricConfermato: true, metricCrediti: true,
+    cardAcconti: true, cardEventi: true, cardPacchetti: true,
+  },
+  // ── Gruppi: sezioni nel pannello dettaglio
+  gruppi: {
+    sectionMembri: true, sectionEventi: true, sectionVacanze: true,
+    memberPhone: true, memberEmail: true,
+    showSaldo: true, showMetodi: true,
+  },
+  // ── Acconti: colonne tabella
+  acconti: {
+    colGruppo: true, colEvento: true, colData: true,
+    colImporto: true, colTotDovuto: true, colMetodo: true,
+    colStato: true, colNote: true,
+  },
+  // ── Eventi: colonne tabella
+  eventi: {
+    colNome: true, colData: true, colOrario: true, colVenue: true,
+    colCitta: true, colPrezzo: true, colCapienza: true,
+    colAcconti: true, colTipo: true, colDresscode: true, colStato: true,
+  },
+  // ── Evento modal: sezioni nel form
+  evtModal: {
+    sectionStatus: true, sectionBase: true, sectionVenue: true,
+    sectionPrezzi: true, sectionLogistica: true, sectionExtra: true,
+    sectionColore: true, sectionRicorrenza: true,
+  },
+  // ── UI preferences
+  ui: {
+    compactTable: false, showRowNumbers: false,
+  },
+};
+
+let CFG = JSON.parse(JSON.stringify(CFG_DEFAULTS)); // deep clone
+
+function cfgGet(section, key) {
+  return CFG[section]?.[key] !== false; // default true if undefined
+}
+
+async function saveCFG() {
+  await Store.set('prm_cfg', JSON.stringify(CFG));
+  updateNav();
+}
+
+function toggleCFG(section, key, el) {
+  if (!CFG[section]) CFG[section] = {};
+  CFG[section][key] = el.checked;
+  saveCFG();
+  render();
+}
+
+function resetCFG() {
+  if(!confirm('Ripristinare tutte le impostazioni ai valori predefiniti?')) return;
+  CFG = JSON.parse(JSON.stringify(CFG_DEFAULTS));
+  saveCFG();
+  render();
+  toast('Impostazioni ripristinate', 'info');
+}
+
+function updateNav() {
+  // Show/hide tab buttons based on CFG.tabs
+  const tabMap = {dashboard:'Dashboard',gruppi:'Gruppi',acconti:'Acconti',eventi:'Eventi',stats:'Statistiche',pacchetti:'Pacchetti',liste:'Liste'};
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+    const t = btn.dataset.tab;
+    if(t === 'settings') return; // always visible
+    if(CFG.tabs && CFG.tabs[t] === false) {
+      btn.style.display = 'none';
+      // if currently on a hidden tab, jump to dashboard
+      if(S.tab === t) switchTab('dashboard');
+    } else {
+      btn.style.display = '';
+    }
+  });
+}
+function toast(msg, type='success') {
+  const icons = {success:'ti-circle-check', error:'ti-alert-circle', info:'ti-info-circle', warn:'ti-info-circle'};
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i class="ti ${icons[type]||icons.info}"></i><span>${esc(msg)}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{ el.style.animation='tout .3s forwards'; setTimeout(()=>el.remove(),300); }, 2600);
+}
+
+/* ── Undo System ──────────────────────────────────────────── */
+let undoTimeout = null;
+let undoAction = null;
+function deleteWithUndo(msg, stateBackupFn, saveFn) {
+  const backup = stateBackupFn();
+  undoAction = () => {
+    saveFn(backup);
+    clearTimeout(undoTimeout);
+    document.getElementById('undo-toast')?.remove();
+    toast('Azione annullata', 'info');
+    render();
+  };
+  
+  const el = document.createElement('div');
+  el.id = 'undo-toast';
+  el.className = `toast warn`;
+  el.innerHTML = `<i class="ti ti-trash"></i><span>${esc(msg)}</span><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-left:10px" onclick="if(undoAction)undoAction()">Annulla</button>`;
+  document.getElementById('toasts').appendChild(el);
+  
+  undoTimeout = setTimeout(() => {
+    el.style.animation='tout .3s forwards';
+    setTimeout(()=>el.remove(),300);
+    undoAction = null;
+  }, 5000);
+}
+
+/* ── State ────────────────────────────────────────────────── */
+const S = {
+  gruppi:[], eventi:[], acconti:[],
+  tab:'dashboard',
+  // gruppi
+  selGroup:null, gruppoSearch:'',
+  showGruppoForm:false, showMemberForm:false, editGruppoId:null,
+  showVacForm:false,
+  // acconti
+  accFilter:'all', accSearch:'', showAccForm:false, editAccId:null,
+  accFormGroupId:'', accFormSelectedEvts:[], accFormAmounts:{},
+  // eventi
+  evtSub:'available', showEvtForm:false, editEvtId:null, evtSearch: '',
+  evtView: 'table',      // 'table' | 'week'
+  evtWeekOffset: 0,      // weeks offset from current week
+  evtPeriod: 'all',      // 'all' | 'week' | 'month' | 'next30'
+  selEvent: null,        // selected event id for detail panel
+  // sorting
+  sort: { key: null, dir: 1 },
+  // ── Pacchetti ──────────────────────────────────────────
+  pacchetti: [], prenotazioniPkg: [],
+  selPacchetto: null, showPkgForm: false, editPkgId: null,
+  pkgSub: 'all', showPrenForm: false, editPrenId: null,
+  // ── Liste Ospiti ────────────────────────────────────────
+  listeEventId: null, listeSearch: '', showOspiteForm: false,
+};
+
+/* ── Keyboard Shortcuts ───────────────────────────────────── */
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    S.showGruppoForm = S.showMemberForm = S.showAccForm = S.showEvtForm = S.showVacForm = false;
+    S.selEvent = null;
+    S.showPkgForm = S.showPrenForm = S.showOspiteForm = false;
+    render();
+  }
+  if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    if(S.tab === 'gruppi') addGruppo();
+    else if(S.tab === 'eventi') openEvtForm();
+    else if(S.tab === 'acconti') openAccForm();
+  }
+});
+
+/* ── Payment methods ──────────────────────────────────────── */
+const PAY_METHODS = ['Contanti','Bonifico','Satispay','PayPal','Carta','Altro'];
+function payBadge(m) {
+  if(!m) return `<span class="text-dim">—</span>`;
+  const map = {Contanti:'green',Bonifico:'blue',Satispay:'violet',PayPal:'blue',Carta:'amber',Altro:'neutral'};
+  return `<span class="badge badge-${map[m]||'neutral'}">${esc(m)}</span>`;
+}
+
+/* ── Persist ──────────────────────────────────────────────── */
+async function loadData() {
+  try {
+    const g = await Store.get('prm_gruppi');
+    const e = await Store.get('prm_eventi');
+    const a = await Store.get('prm_acconti');
+    if(g) S.gruppi  = JSON.parse(g.value);
+    if(e) S.eventi  = JSON.parse(e.value);
+    if(a) S.acconti = JSON.parse(a.value);
+    const pk = await Store.get('prm_pacchetti');
+    const pp = await Store.get('prm_prenp');
+    if(pk) S.pacchetti       = JSON.parse(pk.value);
+    if(pp) S.prenotazioniPkg = JSON.parse(pp.value);
+    // Load settings
+    const cfg = await Store.get('prm_cfg');
+    if(cfg) {
+      const saved = JSON.parse(cfg.value);
+      // Deep merge: keep defaults for any new keys added in future versions
+      for(const section in CFG_DEFAULTS) {
+        if(!CFG[section]) CFG[section] = {};
+        for(const key in CFG_DEFAULTS[section]) {
+          if(saved[section] && saved[section][key] !== undefined)
+            CFG[section][key] = saved[section][key];
+        }
+      }
+    }
+  } catch(e) {}
+  updateNav();
+  render();
+}
+async function persist(key, val) {
+  await Store.set(key, JSON.stringify(val));
+  const el = document.getElementById('save-status');
+  if(el){ el.textContent='✓ Salvato'; setTimeout(()=>el.textContent='',2200); }
+}
+
+/* ── Reset Data ──────────────────────────────────────────── */
+function resetData() {
+  if(!confirm('ATTENZIONE: Sei sicuro di voler cancellare TUTTI i dati (gruppi, eventi, acconti)? Questa operazione non può essere annullata.')) return;
+  if(!confirm('Sei veramente sicuro? Tutti i dati andranno persi per sempre.')) return;
+  S.gruppi = []; S.eventi = []; S.acconti = [];
+  persist('prm_gruppi', S.gruppi); persist('prm_eventi', S.eventi); persist('prm_acconti', S.acconti); persist('prm_pacchetti', S.pacchetti); persist('prm_prenp', S.prenotazioniPkg);
+  toast('Tutti i dati sono stati cancellati');
+  render();
+}
+
+/* ── Export / Import JSON backup ─────────────────────────── */
+function exportData() {
+  const payload = {
+    version: 13,
+    exportedAt: new Date().toISOString(),
+    gruppi:  S.gruppi,
+    eventi:  S.eventi,
+    acconti: S.acconti,
+    pacchetti: S.pacchetti,
+    prenotazioniPkg: S.prenotazioniPkg,
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `PR_Manager_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup JSON esportato','info');
+}
+
+function importData() {
+  document.getElementById('import-file-input').click();
+}
+
+function handleImportFile(ev) {
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if(!payload.gruppi || !payload.eventi || !payload.acconti) {
+        toast('File non valido: struttura non riconosciuta','error'); return;
+      }
+      if(!confirm(`Importare ${payload.gruppi.length} gruppi, ${payload.eventi.length} eventi e ${payload.acconti.length} acconti? I dati attuali verranno sovrascritti.`)) return;
+      S.gruppi  = payload.gruppi;
+      S.eventi  = payload.eventi;
+      S.acconti = payload.acconti;
+      if(payload.pacchetti)       S.pacchetti       = payload.pacchetti;
+      if(payload.prenotazioniPkg) S.prenotazioniPkg = payload.prenotazioniPkg;
+      await persist('prm_gruppi', S.gruppi);
+      await persist('prm_eventi', S.eventi);
+      await persist('prm_acconti', S.acconti);
+      if(S.pacchetti.length)       await persist('prm_pacchetti', S.pacchetti);
+      if(S.prenotazioniPkg.length) await persist('prm_prenp', S.prenotazioniPkg);
+      toast(`Backup ripristinato: ${S.gruppi.length} gruppi, ${S.eventi.length} eventi, ${S.acconti.length} acconti`,'info');
+      render();
+    } catch(err) {
+      toast('Errore nella lettura del file JSON','error');
+    }
+  };
+  reader.readAsText(file);
+  // reset so same file can be re-imported
+  ev.target.value = '';
+}
+
+/* ── Routing ──────────────────────────────────────────────── */
+function switchTab(t) {
+  S.tab = t;
+  S.showGruppoForm = S.showMemberForm = S.showAccForm = S.showEvtForm = S.showVacForm = false;
+  S.editGruppoId = S.editAccId = S.editEvtId = null;
+  S.selEvent = null;
+  S.accFormGroupId = ''; S.accFormSelectedEvts = []; S.accFormAmounts = {};
+  if(t !== 'acconti')   S.accSearch = '';
+  if(t !== 'pacchetti') { S.selPacchetto=null; S.showPkgForm=false; S.showPrenForm=false; S.editPkgId=null; S.editPrenId=null; }
+  if(t !== 'liste')     { S.listeEventId=null; S.listeSearch=''; S.showOspiteForm=false; }
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab===t));
+  render();
+}
+function render() {
+  const c = document.getElementById('content');
+  if(!c) return;
+  const map = {dashboard:renderDashboard, gruppi:renderGruppi, acconti:renderAcconti, eventi:renderEventi, stats:renderStats, pacchetti:renderPacchetti, liste:renderListe, settings:renderSettings};
+  c.innerHTML = (map[S.tab]||renderDashboard)();
+}
+
+/* ── UI Atoms ─────────────────────────────────────────────── */
+const badge     = (t,c) => `<span class="badge badge-${c}">${esc(t)}</span>`;
+const frow      = (lbl,inp) => `<div><label class="field-label">${lbl}</label>${inp}</div>`;
+const btn       = (lbl,fn,cls='btn-primary',ico='') => `<button class="btn ${cls}" onclick="${fn}">${ico?`<i class="ti ${ico}"></i>`:''} ${lbl}</button>`;
+const btnI      = (ico,fn,danger=false,title='') => `<button class="btn-icon${danger?' danger':''}" onclick="${fn}" title="${esc(title)}"><i class="ti ${ico}"></i></button>`;
+const avatar    = s => `<div class="avatar">${ini(s)}</div>`;
+const empty     = (ico,msg) => `<div class="empty"><i class="ti ${ico}"></i><p>${msg}</p></div>`;
+const divider   = () => `<div class="divider"></div>`;
+const metric    = (ico,lbl,val,sub='',col='') => `<div class="metric-tile"><i class="ti ${ico} m-icon"></i><div class="m-label">${lbl}</div><div class="m-val${col?' '+col:''}">${val}</div>${sub?`<div class="m-sub">${sub}</div>`:''}</div>`;
+
+function thSortable(label, key, cls='') {
+  let arrow = '';
+  if (S.sort.key === key) arrow = S.sort.dir === 1 ? ' <span style="color:var(--gold)">↑</span>' : ' <span style="color:var(--gold)">↓</span>';
+  return `<th class="${cls}" style="cursor:pointer" onclick="setSort('${key}')">${label}${arrow}</th>`;
+}
+
+function setSort(key) {
+  if (S.sort.key === key) S.sort.dir *= -1;
+  else { S.sort.key = key; S.sort.dir = 1; }
+  render();
+}
+
+function accBadge(s) {
+  const map = {confirmed:['Confermato','green'], pending:['In attesa','amber'], cancelled:['Annullato','red']};
+  const [t,c] = map[s]||['—','neutral']; return badge(t,c);
+}
+
+/* ── DASHBOARD ────────────────────────────────────────────── */
+function renderDashboard() {
+  const disp  = S.eventi.filter(e=>e.status==='available');
+  const paid  = S.eventi.filter(e=>e.status==='paid');
+  const tot   = S.acconti.reduce((s,a)=>s+(+a.amount||0),0);
+  const conf  = S.acconti.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+  const totM  = S.gruppi.reduce((s,g)=>s+(g.members||[]).length,0);
+  // total saldo: sum of totalDue - confirmed acconti
+  const totDue  = S.acconti.reduce((s,a)=>s+(+a.totalDue||0),0);
+  const saldoTot = totDue - conf;
+  const recent = [...S.acconti].sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,5);
+
+  const recentHTML = recent.length===0 ? empty('ti-receipt','Nessun acconto inserito') :
+    recent.map(a => {
+      const g = S.gruppi.find(x=>x.id===a.groupId);
+      const e = S.eventi.find(x=>x.id===a.eventId);
+      return `<div class="row-item">
+        <div class="flex items-center gap-2 min-w-0">
+          ${avatar(g?.name)}
+          <div class="min-w-0">
+            <p class="font-medium truncate" style="font-size:13px">${esc(g?.name||'—')}</p>
+            <p class="text-dim text-sm truncate">${esc(e?.name||'—')} · ${dat(a.date)}</p>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:12px">
+          <p class="font-medium text-mono" style="font-size:13px">${eur(a.amount)}</p>
+          <div style="margin-top:2px">${accBadge(a.status)}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  const upcomingEvents = disp.filter(e => {
+    const ed = new Date(e.date + 'T12:00:00');
+    return ed >= new Date(new Date().setHours(0,0,0,0));
+  }).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  const evtHTML = upcomingEvents.length===0 ? empty('ti-calendar-off','Nessun evento in programma') :
+    upcomingEvents.map(e => {
+      const accEvt = S.acconti.filter(a=>a.eventId===e.id);
+      const totEvt = accEvt.reduce((s,a)=>s+(+a.amount||0),0);
+      return `<div class="row-item">
+        <div class="min-w-0">
+          <p class="font-medium truncate" style="font-size:13px">${esc(e.name)}</p>
+          <p class="text-dim text-sm">${esc(e.venue||'—')} · ${dat(e.date)}</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:12px">
+          <p class="font-medium text-mono" style="font-size:13px">${eur(e.price)}</p>
+          ${totEvt>0?`<p class="text-dim text-xs">${eur(totEvt)} acconti</p>`:''}
+        </div>
+      </div>`;
+    }).join('');
+
+  return `
+    <div class="metric-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+      ${cfgGet('dash','metricGruppi')    ? metric('ti-users','Gruppi',S.gruppi.length,`${totM} membri totali`) : ''}
+      ${cfgGet('dash','metricEventi')    ? metric('ti-calendar-event','Eventi Attivi',disp.length,`${paid.length} passati/pagati`) : ''}
+      ${cfgGet('dash','metricIncasso')   ? metric('ti-receipt','Totale incassato',eur(tot)) : ''}
+      ${cfgGet('dash','metricConfermato')? metric('ti-circle-check','Incasso Confermato',eur(conf),`${tot>0?pct(conf,tot):0}% del totale`) : ''}
+      ${cfgGet('dash','metricCrediti')   ? metric('ti-alert-triangle','Crediti (Da saldare)',eur(saldoTot>0?saldoTot:0),'',saldoTot>0?'text-danger':'') : ''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      ${cfgGet('dash','cardAcconti') ? `<div class="card"><p class="card-title">Ultimi acconti</p>${recentHTML}</div>` : ''}
+      ${cfgGet('dash','cardEventi')  ? `<div class="card"><p class="card-title">Prossimi Eventi</p>${evtHTML}</div>` : ''}
+      ${cfgGet('dash','cardPacchetti') ? renderPkgDashCard() : ''}
+    </div>`;
+}
+
+/* ── GRUPPI ───────────────────────────────────────────────── */
+function renderGruppi() {
+  const q = S.gruppoSearch.toLowerCase();
+  const list = q ? S.gruppi.filter(g=>g.name.toLowerCase().includes(q)||(g.description||'').toLowerCase().includes(q)) : S.gruppi;
+
+  const sidebar = `<div class="card" style="padding:14px">
+    <div class="flex items-center justify-between mb-3">
+      <p style="font-weight:500;font-size:13px">Gruppi (${S.gruppi.length})</p>
+      ${btn('Nuovo','addGruppo()','btn-primary','ti-plus')}
+    </div>
+    <div class="search-wrap mb-3">
+      <i class="ti ti-search search-ico"></i>
+      <input class="field w-full" placeholder="Cerca…" value="${esc(S.gruppoSearch)}" oninput="S.gruppoSearch=this.value;render()">
+    </div>
+    ${list.length===0 ? `<p class="text-dim text-sm">Nessun gruppo trovato</p>` :
+      list.map(g=>`<div class="sidebar-item${S.selGroup===g.id?' active':''}" onclick="selectGruppo('${g.id}')">
+        <p class="font-medium" style="font-size:13px">${esc(g.name)}</p>
+        <p class="text-dim text-xs">${(g.members||[]).length} membri${g.description?' · '+esc(g.description):''}</p>
+      </div>`).join('')}
+  </div>`;
+
+  let detail = '';
+  if(S.showGruppoForm) {
+    const g = S.editGruppoId ? (S.gruppi.find(x=>x.id===S.editGruppoId)||{}) : {};
+    detail = `<div class="card">
+      <div class="flex items-center justify-between mb-4">
+        <p class="card-title" style="margin:0">${S.editGruppoId?'Modifica gruppo':'Nuovo gruppo'}</p>
+        ${btnI('ti-x','cancelGruppoForm()')}
+      </div>
+      <div class="grid-2 mb-4">
+        ${frow('Nome gruppo *',`<input id="gf-name" class="field w-full" value="${esc(g.name||'')}" placeholder="es. Amici di Marco">`)}
+        ${frow('Descrizione',`<input id="gf-desc" class="field w-full" value="${esc(g.description||'')}" placeholder="Breve nota...">`)}
+      </div>
+      <div class="flex gap-2">
+        ${btn('Salva','saveGruppo()','btn-primary','ti-check')}
+        ${btn('Annulla','cancelGruppoForm()','btn-ghost')}
+      </div>
+    </div>`;
+  } else if(S.selGroup) {
+    const g = S.gruppi.find(x=>x.id===S.selGroup);
+    if(g) {
+      const members   = g.members||[];
+      const vacanze   = g.vacanze||[];
+      const gAcconti  = S.acconti.filter(a=>a.groupId===g.id);
+      const gTotal    = gAcconti.reduce((s,a)=>s+(+a.amount||0),0);
+      const gConf     = gAcconti.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+      const gDue      = gAcconti.reduce((s,a)=>s+(+a.totalDue||0),0);
+      const gSaldo    = gDue - gConf;
+
+      // Events bought (unique events with acconti) — sorted by event date
+      const evtIds    = [...new Set(gAcconti.map(a=>a.eventId).filter(Boolean))];
+      const evtBought = evtIds.map(id=>{
+        const ev  = S.eventi.find(x=>x.id===id);
+        const acc = gAcconti.filter(a=>a.eventId===id);
+        const totAcc = acc.reduce((s,a)=>s+(+a.amount||0),0);
+        const totConf= acc.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+        const totDue = acc.reduce((s,a)=>s+(+a.totalDue||0),0);
+        const methods= [...new Set(acc.map(a=>a.paymentMethod).filter(Boolean))];
+        return {eventId: id, ev, acc, totAcc, totConf, totDue, methods};
+      }).sort((a,b)=>((a.ev?.date||'')<(b.ev?.date||''))?-1:1);
+
+      const memberRows = members.length===0 ? empty('ti-user','Nessun membro aggiunto') :
+        members.map(m=>`<div class="row-item">
+          <div class="flex items-center gap-2">
+            ${avatar(m.name)}
+            <div>
+              <p class="font-medium" style="font-size:13px">${esc(m.name)}</p>
+              <p class="text-dim text-sm">${[cfgGet('gruppi','memberPhone')?m.phone:'', cfgGet('gruppi','memberEmail')?m.email:''].filter(Boolean).map(esc).join(' · ')||'—'}</p>
+            </div>
+          </div>
+          ${btnI('ti-trash',`delMember('${m.id}')`,true,'Rimuovi')}
+        </div>`).join('');
+
+      const mForm = S.showMemberForm ? `<div class="form-bg mb-3">
+        <div class="grid-3 mb-3">
+          ${frow('Nome *',`<input id="mf-name" class="field w-full" placeholder="Nome e cognome">`)}
+          ${frow('Telefono',`<input id="mf-phone" class="field w-full" placeholder="+39...">`)}
+          ${frow('Email',`<input id="mf-email" class="field w-full" placeholder="email@...">`)}
+        </div>
+        <div class="flex gap-2">
+          ${btn('Aggiungi','addMember()','btn-primary','ti-user-plus')}
+          ${btn('Annulla','toggleMemberForm()','btn-ghost')}
+        </div>
+      </div>` : '';
+
+      // Vacation form
+      const vacForm = S.showVacForm ? `<div class="form-bg mb-3">
+        <div class="grid-3 mb-3">
+          ${frow('Dal *',`<input type="date" id="vf-from" class="field w-full">`)}
+          ${frow('Al *',`<input type="date" id="vf-to" class="field w-full">`)}
+          ${frow('Nota',`<input id="vf-note" class="field w-full" placeholder="Destinazione, motivo...">`)}
+        </div>
+        <div class="flex gap-2">
+          ${btn('Aggiungi','addVacanza()','btn-primary','ti-check')}
+          ${btn('Annulla','closeVacForm()','btn-ghost')}
+        </div>
+      </div>` : '';
+
+      const vacRows = vacanze.length===0 && !S.showVacForm
+        ? `<p class="text-dim text-sm" style="padding:6px 0">Nessun periodo registrato.</p>`
+        : vacanze.map(v=>`<div class="vac-chip">
+            <i class="ti ti-beach" style="color:var(--violet);font-size:16px;flex-shrink:0"></i>
+            <span class="vac-dates">${dat(v.from)} → ${dat(v.to)}</span>
+            ${v.note?`<span class="vac-note">· ${esc(v.note)}</span>`:''}
+            <div class="ml-auto">${btnI('ti-trash',`delVacanza('${v.id}')`,true,'Rimuovi')}</div>
+          </div>`).join('');
+
+      // Events bought section — full individual acconto rows
+      const evtBoughtHTML = evtBought.length===0
+        ? `<p class="text-dim text-sm" style="padding:6px 0">Nessun evento acquistato.</p>`
+        : evtBought.map(({eventId,ev,acc,totAcc,totConf,totDue,methods})=>{
+            const saldo = totDue - totConf;
+            const evtName = ev?.name || 'Evento eliminato';
+            return `<div style="border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-bottom:10px">
+              <!-- event header row -->
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border)">
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <p class="font-medium" style="font-size:13px">${esc(evtName)}</p>
+                    ${ev ? evtStatusBadge(ev) : badge('Eliminato','red')}
+                  </div>
+                  <p class="text-dim text-xs" style="margin-top:2px">${ev ? dat(ev.date) : '—'}${ev?.venue?' · '+esc(ev.venue):''}</p>
+                </div>
+                <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:10px">
+                  <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openAccFormForGroup('${g.id}','${eventId}')">
+                    <i class="ti ti-plus" style="font-size:12px"></i> Acconto
+                  </button>
+                  <button class="btn btn-danger" style="font-size:11px;padding:4px 10px" onclick="delGroupEvent('${eventId}')">
+                    <i class="ti ti-trash" style="font-size:12px"></i>
+                  </button>
+                </div>
+              </div>
+              <!-- totals summary bar -->
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border)">
+                <div style="padding:8px 14px;border-right:1px solid var(--border)">
+                  <p class="text-xs text-dim" style="margin-bottom:2px">Versato</p>
+                  <p class="text-mono font-medium text-gold">${eur(totAcc)}</p>
+                </div>
+                <div style="padding:8px 14px;border-right:1px solid var(--border)">
+                  <p class="text-xs text-dim" style="margin-bottom:2px">Dovuto</p>
+                  <p class="text-mono font-medium">${totDue>0?eur(totDue):'—'}</p>
+                </div>
+                <div style="padding:8px 14px">
+                  <p class="text-xs text-dim" style="margin-bottom:2px">Saldo</p>
+                  <p class="text-mono font-medium${saldo>0&&totDue>0?' text-danger':totDue>0?' text-success':''}">${totDue>0?eur(saldo):'—'}</p>
+                </div>
+              </div>
+              <!-- individual acconto rows -->
+              ${acc.map(a => {
+                const accSaldo = (+a.totalDue||0) - (+a.amount||0);
+                const toggleIco   = a.status==='confirmed' ? 'ti-rotate-clockwise' : 'ti-circle-check';
+                const toggleTitle = a.status==='confirmed' ? 'Riporta in attesa' : 'Conferma acconto';
+                return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border)">
+                  <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+                    ${accBadge(a.status)}
+                    <span class="text-mono font-medium" style="font-size:13px;color:var(--gold)">${eur(a.amount)}</span>
+                    ${a.totalDue?`<span class="text-xs text-dim">su ${eur(a.totalDue)}</span>`:''}
+                    ${a.date?`<span class="text-xs text-dim hide-mobile">${dat(a.date)}</span>`:''}
+                    ${a.paymentMethod?`<span class="badge badge-neutral" style="font-size:10px">${esc(a.paymentMethod)}</span>`:''}
+                    ${a.note?`<span class="text-xs text-dim truncate hide-mobile" style="max-width:120px" title="${esc(a.note)}">· ${esc(a.note)}</span>`:''}
+                  </div>
+                  <div style="display:flex;gap:2px;flex-shrink:0;margin-left:8px">
+                    ${btnI('ti-edit',`editAcconto('${a.id}')`,false,'Modifica acconto')}
+                    ${btnI(toggleIco,`toggleAccFromGroup('${a.id}')`,false,toggleTitle)}
+                    ${btnI('ti-trash',`delAccontoFromGroup('${a.id}')`,true,'Elimina acconto')}
+                  </div>
+                </div>`;
+              }).join('')}
+              ${methods.length>0?`<div style="padding:6px 14px;background:var(--bg2);border-top:1px solid var(--border)"><span class="text-xs text-dim"><i class="ti ti-credit-card" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>Metod${methods.length>1?'i':'o'}: </span><span class="text-xs" style="color:var(--text2)">${methods.map(esc).join(', ')}</span></div>`:''}
+            </div>`;
+          }).join('');
+
+      detail = `<div class="card">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-head" style="font-size:20px;font-weight:600">${esc(g.name)}</h2>
+          <div class="flex gap-2">
+            ${btn('Modifica',`editGruppo('${g.id}')`, 'btn-secondary')}
+            ${btnI('ti-trash',`delGruppo('${g.id}')`,true,'Elimina gruppo')}
+          </div>
+        </div>
+        ${g.description?`<p class="text-muted text-sm mb-3">${esc(g.description)}</p>`:`<div style="height:8px"></div>`}
+
+        <!-- Stats row -->
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;padding:12px;background:var(--bg2);border-radius:var(--r-md)">
+          <div><p class="text-xs text-dim" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Membri</p><p class="text-mono font-medium">${members.length}</p></div>
+          <div><p class="text-xs text-dim" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Acconti</p><p class="text-mono font-medium">${gAcconti.length}</p></div>
+          <div><p class="text-xs text-dim" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Versato</p><p class="text-mono font-medium text-gold">${eur(gTotal)}</p></div>
+          <div><p class="text-xs text-dim" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Confermato</p><p class="text-mono font-medium text-success">${eur(gConf)}</p></div>
+          ${cfgGet('gruppi','showSaldo') && gDue>0?`<div><p class="text-xs text-dim" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Da saldare</p><p class="text-mono font-medium${gSaldo>0?' text-danger':' text-success'}">${eur(gSaldo>0?gSaldo:0)}</p></div>`:''}
+        </div>
+
+        ${divider()}
+
+        ${cfgGet('gruppi','sectionVacanze') ? `
+        <!-- Vacanze -->
+        <div class="flex items-center justify-between mb-3">
+          <p style="font-weight:500;font-size:14px"><i class="ti ti-beach" style="font-size:14px;vertical-align:-2px;margin-right:5px;color:var(--violet)"></i>Periodi di assenza / vacanza</p>
+          ${btn('Aggiungi periodo','openVacForm()','btn-secondary','ti-plus')}
+        </div>
+        ${vacForm}${vacRows}
+        ${divider()}` : ''}
+
+        ${cfgGet('gruppi','sectionEventi') ? `
+        <!-- Events bought -->
+        <div class="mb-3">
+          <div class="flex items-center justify-between mb-3">
+            <p style="font-weight:500;font-size:14px"><i class="ti ti-ticket" style="font-size:14px;vertical-align:-2px;margin-right:5px;color:var(--gold)"></i>Eventi acquistati (${evtBought.length})</p>
+            <div class="flex gap-2">
+              ${btn('+ Acconto', `openAccFormForGroup('${g.id}','')`, 'btn-secondary', 'ti-receipt')}
+              ${btn('WhatsApp', `shareWA('${g.id}')`, 'btn-success-sm', 'ti-brand-whatsapp')}
+            </div>
+          </div>
+          ${evtBoughtHTML}
+        </div>
+        ${divider()}` : ''}
+
+        ${cfgGet('gruppi','sectionMembri') ? `
+        <!-- Members -->
+        <div class="flex items-center justify-between mb-3">
+          <p style="font-weight:500;font-size:14px">Membri (${members.length})</p>
+          ${btn('Aggiungi membro','toggleMemberForm()','btn-secondary','ti-user-plus')}
+        </div>
+        ${mForm}${memberRows}` : ''}
+      </div>`;
+    }
+  } else {
+    detail = `<div class="card">${empty('ti-users','Seleziona un gruppo dalla lista o creane uno nuovo')}</div>`;
+  }
+
+  return `<div style="display:grid;grid-template-columns:250px 1fr;gap:14px;align-items:start">${sidebar}<div>${detail}</div></div>`;
+}
+
+function shareWA(gId) {
+  const g = S.gruppi.find(x=>x.id===gId);
+  if(!g) return;
+  const gAcconti = S.acconti.filter(a=>a.groupId===g.id);
+  const conf = gAcconti.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+  const due = gAcconti.reduce((s,a)=>s+(+a.totalDue||0),0);
+  const saldo = due - conf;
+  
+  let text = `Ciao! Ecco il riepilogo per il gruppo *${g.name}*:\n\n`;
+  const evtIds = [...new Set(gAcconti.map(a=>a.eventId).filter(Boolean))];
+  evtIds.forEach(id => {
+    const ev = S.eventi.find(x=>x.id===id);
+    if(ev) {
+      const acc = gAcconti.filter(a=>a.eventId===id);
+      const eDue = acc.reduce((s,a)=>s+(+a.totalDue||0),0);
+      const eConf = acc.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+      text += `📅 *${ev.name}* (${dat(ev.date)})\n`;
+      text += `   Totale: ${eur(eDue)} | Acconto: ${eur(eConf)} | Saldo: ${eur(eDue-eConf)}\n`;
+    }
+  });
+  text += `\n💰 *Totale da Saldare:* ${eur(saldo > 0 ? saldo : 0)}\n`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+
+/* ── ACCONTI ──────────────────────────────────────────────── */
+function renderAcconti() {
+  const labels = {all:'Tutti',pending:'In attesa',confirmed:'Confermati',cancelled:'Annullati'};
+  let filtered = S.acconti.filter(a=>S.accFilter==='all'||a.status===S.accFilter);
+
+  // ── search by group name, event name, note ──
+  if (S.accSearch) {
+    const q = S.accSearch.toLowerCase();
+    filtered = filtered.filter(a => {
+      const gName = (S.gruppi.find(g=>g.id===a.groupId)?.name||'').toLowerCase();
+      const eName = (S.eventi.find(e=>e.id===a.eventId)?.name||'').toLowerCase();
+      const note  = (a.note||'').toLowerCase();
+      return gName.includes(q) || eName.includes(q) || note.includes(q);
+    });
+  }
+  
+  if (S.sort.key) {
+    filtered.sort((a,b) => {
+      let v1 = a[S.sort.key];
+      let v2 = b[S.sort.key];
+      if(['amount','totalDue','ts'].includes(S.sort.key)) { v1=+v1||0; v2=+v2||0; }
+      if (v1 < v2) return -1 * S.sort.dir;
+      if (v1 > v2) return 1 * S.sort.dir;
+      return 0;
+    });
+  } else {
+    filtered.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  }
+
+  const totFil = filtered.reduce((s,a)=>s+(+a.amount||0),0);
+
+  const groupOpts = S.gruppi.map(g=>`<option value="${g.id}" ${S.accFormGroupId===g.id?'selected':''}>${esc(g.name)}</option>`).join('');
+  const evtOpts   = S.eventi.map(e=>`<option value="${e.id}">${esc(e.name)} - ${dat(e.date)}</option>`).join('');
+  const payOpts   = PAY_METHODS.map(m=>`<option value="${m}">${m}</option>`).join('');
+
+  // ── EDIT form (single event, unchanged) ──
+  const editForm = S.showAccForm && S.editAccId ? `<div class="card mb-4">
+    <div class="flex items-center justify-between mb-4">
+      <p class="card-title" style="margin:0">Modifica acconto</p>
+      ${btnI('ti-x','closeAccForm()')}
+    </div>
+    <div class="grid-3 mb-3">
+      ${frow('Gruppo *',`<select id="af-group" class="field w-full"><option value="">Seleziona...</option>${groupOpts}</select>`)}
+      ${frow('Evento',`<select id="af-event" class="field w-full"><option value="">— nessuno —</option>${evtOpts}</select>`)}
+      ${frow('Importo acconto (€) *',`<input type="number" id="af-amount" class="field w-full" placeholder="0.00" step="0.01" min="0">`)}
+      ${frow('Totale dovuto (€)',`<input type="number" id="af-totaldue" class="field w-full" placeholder="0.00" step="0.01" min="0">`)}
+      ${frow('Metodo pagamento',`<select id="af-method" class="field w-full"><option value="">— non specificato —</option>${payOpts}</select>`)}
+      ${frow('Data versamento',`<input type="date" id="af-date" class="field w-full">`)}
+      ${frow('Stato',`<select id="af-status" class="field w-full"><option value="pending">In attesa</option><option value="confirmed">Confermato</option><option value="cancelled">Annullato</option></select>`)}
+      ${frow('Note',`<input id="af-note" class="field w-full" placeholder="Note facoltative...">`)}
+    </div>
+    <div class="flex gap-2">
+      ${btn('Salva modifiche','saveAcconto()','btn-primary','ti-check')}
+      ${btn('Annulla','closeAccForm()','btn-ghost')}
+    </div>
+  </div>` : '';
+
+  // ── NEW form (multi-event) ──
+  const newForm = S.showAccForm && !S.editAccId ? (() => {
+    const selEvts = S.accFormSelectedEvts.map(id => S.eventi.find(e=>e.id===id)).filter(Boolean);
+    const allEvts = S.eventi.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+
+    const evtChips = allEvts.length === 0
+      ? `<p class="text-dim text-sm">Nessun evento disponibile.</p>`
+      : allEvts.map(e => {
+          const sel = S.accFormSelectedEvts.includes(e.id);
+          const statusDot = {available:'var(--warn)', paid:'var(--success)', cancelled:'var(--danger)', soldout:'var(--violet)', private:'var(--info)'}[e.status]||'var(--text3)';
+          return `<button type="button" class="evt-chip${sel?' selected':''}" onclick="toggleAccEvent('${e.id}')">
+            ${sel?`<i class="ti ti-check" style="font-size:11px"></i>`:`<span style="width:6px;height:6px;border-radius:50%;background:${statusDot};flex-shrink:0;display:inline-block"></span>`}
+            ${esc(e.name)}
+            <span class="chip-date">${dat(e.date)}</span>
+          </button>`;
+        }).join('');
+
+    const amtTable = selEvts.length === 0 ? '' : `
+      <div style="border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-top:12px">
+        <div class="amt-row-head">
+          <span class="field-label" style="margin:0">Evento selezionato</span>
+          <span class="field-label" style="margin:0">Acconto (€) *</span>
+          <span class="field-label" style="margin:0">Totale dovuto (€)</span>
+        </div>
+        ${selEvts.map(e => {
+          const saved = S.accFormAmounts[e.id]||{};
+          return `<div class="amt-row">
+            <div>
+              <p class="font-medium" style="font-size:13px">${esc(e.name)}</p>
+              <p class="text-dim text-xs">${dat(e.date)}${e.venue?' · '+esc(e.venue):''}</p>
+            </div>
+            <input type="number" id="af-amount-${e.id}" class="field" placeholder="0.00" step="0.01" min="0" value="${esc(saved.amount||'')}" oninput="saveAccAmounts()">
+            <input type="number" id="af-totaldue-${e.id}" class="field" placeholder="0.00" step="0.01" min="0" value="${esc(saved.totalDue||'')}" oninput="saveAccAmounts()">
+          </div>`;
+        }).join('')}
+      </div>`;
+
+    const commonFields = selEvts.length === 0 ? '' : `
+      <div class="grid-4 mb-4" style="margin-top:14px">
+        ${frow('Metodo pagamento',`<select id="af-method" class="field w-full"><option value="">— non specificato —</option>${payOpts}</select>`)}
+        ${frow('Data versamento',`<input type="date" id="af-date" class="field w-full" value="${isoDate(new Date())}">`)}
+        ${frow('Stato',`<select id="af-status" class="field w-full"><option value="pending">In attesa</option><option value="confirmed">Confermato</option><option value="cancelled">Annullato</option></select>`)}
+        ${frow('Note',`<input id="af-note" class="field w-full" placeholder="Note facoltative...">`)}
+      </div>
+      <div class="flex gap-2 items-center">
+        ${btn(`Crea ${selEvts.length} accont${selEvts.length===1?'o':'i'}`, 'saveAcconto()', 'btn-primary', 'ti-check')}
+        ${btn('Annulla','closeAccForm()','btn-ghost')}
+        <span class="text-dim text-xs" style="margin-left:4px">Un acconto separato per ogni evento selezionato</span>
+      </div>`;
+
+    return `<div class="card mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <p class="card-title" style="margin:0">Nuovo acconto</p>
+        ${btnI('ti-x','closeAccForm()')}
+      </div>
+
+      <!-- Step 1: group -->
+      <div class="step-label"><i class="ti ti-users" style="font-size:12px"></i>1. Seleziona il gruppo</div>
+      <div class="mb-4">
+        <select id="af-group" class="field" style="max-width:340px" onchange="onAccGroupChange(this.value)">
+          <option value="">Seleziona gruppo...</option>
+          ${S.gruppi.map(g=>`<option value="${g.id}" ${S.accFormGroupId===g.id?'selected':''}>${esc(g.name)}</option>`).join('')}
+        </select>
+      </div>
+
+      ${S.accFormGroupId ? `
+      <!-- Step 2: event picker -->
+      <div class="step-label"><i class="ti ti-ticket" style="font-size:12px"></i>2. Seleziona uno o più eventi</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px">${evtChips}</div>
+      ${amtTable}
+
+      <!-- Step 3: common fields -->
+      ${selEvts.length > 0 ? `
+      <div class="step-label" style="margin-top:18px"><i class="ti ti-settings" style="font-size:12px"></i>3. Dettagli comuni</div>
+      ${commonFields}` : `<p class="text-dim text-sm" style="margin-top:10px"><i class="ti ti-info-circle" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Clicca sugli eventi sopra per selezionarli, poi inserisci gli importi.</p>`}
+      ` : `<p class="text-dim text-sm" style="padding:4px 0 0"><i class="ti ti-arrow-up" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Scegli il gruppo per visualizzare gli eventi disponibili.</p>
+      <div class="flex gap-2 mt-3">${btn('Annulla','closeAccForm()','btn-ghost')}</div>`}
+    </div>`;
+  })() : '';
+
+  const form = editForm + newForm;
+
+  const tableHTML = filtered.length===0 ? `<div class="card">${empty('ti-receipt','Nessun acconto trovato')}</div>` :
+    `<div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr>
+          ${cfgGet('acconti','colGruppo')  ? '<th>Gruppo</th>' : ''}
+          ${cfgGet('acconti','colEvento')  ? '<th>Evento</th>' : ''}
+          ${cfgGet('acconti','colData')    ? thSortable('Data','date') : ''}
+          ${cfgGet('acconti','colImporto') ? thSortable('Acconto','amount') : ''}
+          ${cfgGet('acconti','colTotDovuto')? thSortable('Totale','totalDue') : ''}
+          ${cfgGet('acconti','colTotDovuto')? '<th>Saldo</th>' : ''}
+          ${cfgGet('acconti','colMetodo')  ? thSortable('Metodo','paymentMethod') : ''}
+          ${cfgGet('acconti','colStato')   ? thSortable('Stato','status') : ''}
+          ${cfgGet('acconti','colNote')    ? '<th class="hide-mobile">Note</th>' : ''}
+          <th></th>
+        </tr></thead>
+        <tbody>${filtered.map(a => {
+          const g = S.gruppi.find(x=>x.id===a.groupId);
+          const e = S.eventi.find(x=>x.id===a.eventId);
+          const saldo = (+a.totalDue||0) - (+a.amount||0);
+          const toggleIco   = a.status==='confirmed' ? 'ti-rotate-clockwise' : 'ti-circle-check';
+          const toggleTitle = a.status==='confirmed' ? 'Riporta in attesa' : 'Conferma';
+          return `<tr>
+            ${cfgGet('acconti','colGruppo')  ? `<td><span class="font-medium truncate" style="max-width:100px;display:block">${esc(g?.name||'—')}</span></td>` : ''}
+            ${cfgGet('acconti','colEvento')  ? `<td class="text-muted truncate" style="max-width:90px">${esc(e?.name||'—')}</td>` : ''}
+            ${cfgGet('acconti','colData')    ? `<td class="text-dim">${dat(a.date)}</td>` : ''}
+            ${cfgGet('acconti','colImporto') ? `<td><span class="text-mono font-medium text-gold">${eur(a.amount)}</span></td>` : ''}
+            ${cfgGet('acconti','colTotDovuto')? `<td class="text-mono">${a.totalDue?eur(a.totalDue):'—'}</td>` : ''}
+            ${cfgGet('acconti','colTotDovuto')? `<td class="text-mono${saldo>0&&a.totalDue?' text-danger':saldo===0&&a.totalDue?' text-success':''}">${a.totalDue?eur(saldo):'—'}</td>` : ''}
+            ${cfgGet('acconti','colMetodo')  ? `<td>${payBadge(a.paymentMethod)}</td>` : ''}
+            ${cfgGet('acconti','colStato')   ? `<td>${accBadge(a.status)}</td>` : ''}
+            ${cfgGet('acconti','colNote')    ? `<td class="text-dim text-sm truncate hide-mobile" style="max-width:90px">${esc(a.note||'')}</td>` : ''}
+            <td><div class="flex gap-2">
+              ${btnI('ti-copy',`duplicateAcconto('${a.id}')`,false,'Duplica')}
+              ${btnI('ti-edit',`editAcconto('${a.id}')`,false,'Modifica')}
+              ${btnI(toggleIco,`toggleAcc('${a.id}')`,false,toggleTitle)}
+              ${btnI('ti-trash',`delAcconto('${a.id}')`,true,'Elimina')}
+            </div></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+
+  return `
+    <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:10px">
+      <div class="filter-bar">
+        ${Object.entries(labels).map(([v,l])=>`<button class="filter-pill${S.accFilter===v?' active':''}" onclick="setAccFilter('${v}')">${l}</button>`).join('')}
+      </div>
+      <div class="flex gap-2 items-center" style="flex-wrap:wrap">
+        <div class="search-wrap" style="width:210px">
+          <i class="ti ti-search search-ico"></i>
+          <input class="field w-full" placeholder="Cerca gruppo, evento, note…" value="${esc(S.accSearch)}" oninput="S.accSearch=this.value;render()" style="padding-right:${S.accSearch?'28px':'11px'}">
+          ${S.accSearch?`<button style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:0;line-height:1" onclick="S.accSearch='';render()" title="Cancella ricerca"><i class="ti ti-x"></i></button>`:''}
+        </div>
+        ${filtered.length>0?`<span class="text-dim text-sm" style="align-self:center;font-family:var(--font-m)">${eur(totFil)}</span>`:''}
+        ${btn('Esporta CSV','exportAcconti()','btn-ghost','ti-download')}
+        ${btn('Nuovo','openAccForm()','btn-primary','ti-plus')}
+      </div>
+    </div>
+    ${form}${tableHTML}`;
+}
+
+/* ── EVENTI ───────────────────────────────────────────────── */
+
+/* helpers for week calendar */
+function getWeekDays(offset) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay();
+  const mondayDelta = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + mondayDelta + offset * 7);
+  return Array.from({length:7}, (_,i) => { const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
+}
+function isoDate(d) { return d.toISOString().split('T')[0]; }
+function isToday(d) {
+  const t = new Date(); t.setHours(0,0,0,0);
+  return d.getTime() === t.getTime();
+}
+
+/* ── EVENT MODAL ──────────────────────────────────────────── */
+const EVT_COLORS = ['#C9A84C','#F87171','#5DE0A5','#60A5FA','#A78BFA','#FBB040','#F472B6','#34D399','#FB923C','#94A3B8'];
+const EVT_STATUS_MAP = [
+  {v:'available', label:'Disponibile',  dot:'#FBB040'},
+  {v:'paid',      label:'Pagato/Svolto',dot:'#5DE0A5'},
+  {v:'cancelled', label:'Cancellato',   dot:'#F87171'},
+  {v:'soldout',   label:'Sold Out',     dot:'#A78BFA'},
+  {v:'private',   label:'Privato',      dot:'#60A5FA'},
+];
+const EVT_DRESS = ['Elegante','Smart Casual','Casual','Formale','Tema','Beach','Black Tie','Libero'];
+const EVT_TYPES = ['Serata','Aperitivo','Privato','Compleanno','Inaugurazione','Festival','Concerto','Brunch','After','Evento Corporate','Altro'];
+
+function openEvtModal(id) {
+  const ev = id ? (S.eventi.find(x=>x.id===id)||{}) : {};
+  const isEdit = !!id;
+  S.editEvtId = id||null;
+  S._modalEvt = ev;
+
+  const curColor  = ev.color  || '#C9A84C';
+  const curStatus = ev.status || 'available';
+
+  const fld = (lbl, inp, hint='') =>
+    `<div><label class="field-label">${lbl}</label>${inp}${hint?`<p style="font-size:10px;color:var(--text3);margin-top:3px">${hint}</p>`:''}</div>`;
+
+  const colorSwatches = EVT_COLORS.map(c =>
+    `<div class="color-swatch${c===curColor?' active':''}" style="background:${c}" onclick="evtPickColor('${c}')" title="${c}" id="cswatch-${c.slice(1)}"></div>`
+  ).join('');
+
+  const statusChips = EVT_STATUS_MAP.map(s =>
+    `<div class="status-chip${s.v===curStatus?' active-chip':''}" style="${s.v===curStatus?`border-color:${s.dot};background:${s.dot}22;`:'color:var(--text2)'}" onclick="evtPickStatus('${s.v}')" id="schip-${s.v}">
+      <span class="dot" style="background:${s.dot}"></span>${s.label}
+    </div>`
+  ).join('');
+
+  const dressOpts = ['', ...EVT_DRESS].map(d => `<option value="${d}"${ev.dresscode===d?' selected':''}>${d||'— non specificato —'}</option>`).join('');
+  const typeOpts  = ['', ...EVT_TYPES].map(t => `<option value="${t}"${ev.tag===t?' selected':''}>${t||'— nessuno —'}</option>`).join('');
+
+  const modal = `<div class="evt-modal-overlay" id="evt-modal-overlay" onclick="if(event.target.id==='evt-modal-overlay')closeEvtModal()">
+    <div class="evt-modal">
+
+      <div class="evt-modal-header">
+        <div>
+          <p style="font-family:var(--font-h);font-size:20px;font-weight:600">${isEdit?'Modifica evento':'Nuovo evento'}</p>
+          ${isEdit&&ev.name?`<p style="font-size:12px;color:var(--text3);margin-top:2px">${esc(ev.name)}</p>`:''}
+        </div>
+        <div class="flex gap-2">
+          ${isEdit ? `<button class="btn btn-danger" onclick="delEventoFromModal('${id}')"><i class="ti ti-trash"></i> Elimina</button>` : ''}
+          <button class="btn-icon" onclick="closeEvtModal()"><i class="ti ti-x" style="font-size:20px"></i></button>
+        </div>
+      </div>
+
+      <div class="evt-modal-body">
+
+        <!-- STATUS -->
+        ${cfgGet('evtModal','sectionStatus') ? `
+        <div class="section-block">
+          <p class="section-title"><i class="ti ti-toggle-right"></i>Stato evento</p>
+          <div class="flex gap-2" style="flex-wrap:wrap" id="status-chips">${statusChips}</div>
+          <input type="hidden" id="ef-status" value="${curStatus}">
+        </div>` : `<input type="hidden" id="ef-status" value="${curStatus}">`}
+
+        <!-- INFO BASE -->
+        ${cfgGet('evtModal','sectionBase') ? `
+        <div class="section-block">
+          <p class="section-title"><i class="ti ti-info-circle"></i>Informazioni base</p>
+          <div class="grid-3" style="gap:12px">
+            ${fld('Nome evento *', `<input id="ef-name" class="field w-full" placeholder="es. Saturday Night" value="${esc(ev.name||'')}">`)}
+            ${fld('Data *',        `<input type="date" id="ef-date" class="field w-full" value="${esc(ev.date||'')}">`)}
+            ${fld('Ora inizio',    `<input type="time" id="ef-time-start" class="field w-full" value="${esc(ev.timeStart||'')}">`)}
+            ${fld('Ora fine',      `<input type="time" id="ef-time-end" class="field w-full" value="${esc(ev.timeEnd||'')}">`)}
+            ${fld('Tipo evento',   `<select id="ef-tag" class="field w-full">${typeOpts}</select>`)}
+            ${fld('Dress Code',    `<select id="ef-dresscode" class="field w-full">${dressOpts}</select>`)}
+          </div>
+        </div>` : `
+        <!-- minimal base (always save name+date even if section hidden) -->
+        <div class="section-block">
+          <p class="section-title"><i class="ti ti-info-circle"></i>Informazioni base</p>
+          <div class="grid-2" style="gap:12px">
+            ${fld('Nome evento *', `<input id="ef-name" class="field w-full" placeholder="es. Saturday Night" value="${esc(ev.name||'')}">`)}
+            ${fld('Data *',        `<input type="date" id="ef-date" class="field w-full" value="${esc(ev.date||'')}">`)}
+          </div>
+          <p class="text-dim text-xs" style="margin-top:8px"><i class="ti ti-settings" style="font-size:11px;vertical-align:-1px;margin-right:4px"></i>Campi aggiuntivi disattivati nelle <a onclick="closeEvtModal();switchTab('settings');setSettingsSub('evtModal')" href="#" style="color:var(--gold)">Impostazioni → Form Evento</a></p>
+        </div>`}
+
+        <!-- VENUE -->
+        ${cfgGet('evtModal','sectionVenue') ? `
+        <div class="section-block">
+          <p class="section-title"><i class="ti ti-map-pin"></i>Venue & Luogo</p>
+          <div class="grid-2" style="gap:12px;margin-bottom:12px">
+            ${fld('Nome venue / locale', `<input id="ef-venue" class="field w-full" placeholder="es. Club Amnesia" value="${esc(ev.venue||'')}">`)}
+            ${fld('Città',              `<input id="ef-city" class="field w-full" placeholder="es. Milano" value="${esc(ev.city||'')}">`)}
+          </div>
+          <div class="grid-2" style="gap:12px">
+            ${fld('Indirizzo completo', `<input id="ef-address" class="field w-full" placeholder="Via Roma 1" value="${esc(ev.address||'')}">`)}
+            ${fld('Link Google Maps / evento', `<input id="ef-maplink" class="field w-full" placeholder="https://maps.google.com/..." value="${esc(ev.maplink||'')}">`)}
+          </div>
+        </div>` : ''}
+
+        <!-- PREZZI -->
+        ${cfgGet('evtModal','sectionPrezzi') ? `
+        <div class="section-block">
+          <p class="section-title"><i class="ti ti-currency-euro"></i>Prezzi</p>
+          <div class="grid-3" style="gap:12px">
+            ${fld('Prezzo PR (€)',       `<input type="number" id="ef-price"       class="field w-full" placeholder="0.00" min="0" step="0.01" value="${esc(ev.price||'')}">`, 'Prezzo base per il tuo listino PR')}
+            ${fld('Prezzo donna (€)',    `<input type="number" id="ef-price-f"     class="field w-full" placeholder="0.00" min="0" step="0.01" value="${esc(ev.priceF||'')}">`)}
+            ${fld('Prezzo uomo (€)',     `<input type="number" id="ef-price-m"     class="field w-full" placeholder="0.00" min="0" step="0.01" value="${esc(ev.priceM||'')}">`)}
+            ${fld('Prezzo lista (€)',    `<input type="number" id="ef-price-list"  class="field w-full" placeholder="0.00" min="0" step="0.01" value="${esc(ev.priceList||'')}">`, 'Ingresso senza PR')}
+            ${fld('Tavolo minimo (€)',   `<input type="number" id="ef-price-table" class="field w-full" placeholder="0.00" min="0" step="0.01" value="${esc(ev.priceTable||'')}">`, 'Spesa minima tavolo VIP')}
+            ${fld('Valuta',             `<select id="ef-currency" class="field w-full"><option value="EUR"${(ev.currency||'EUR')==='EUR'?' selected':''}>€ EUR</option><option value="USD"${ev.currency==='USD'?' selected':''}>$ USD</option><option value="GBP"${ev.currency==='GBP'?' selected':''}>£ GBP</option></select>`)}
+          </div>
+        </div>` : ''}
+
+        <!-- CAPIENZA & LOGISTICA -->
+        ${cfgGet('evtModal','sectionLogistica') ? `
+        <div class="section-block">
+          <p class="section-title"><i class="ti ti-users"></i>Capienza & Logistica</p>
+          <div class="grid-3" style="gap:12px">
+            ${fld('Capienza totale',    `<input type="number" id="ef-capacity"     class="field w-full" placeholder="—" min="0" value="${esc(ev.capacity||'')}">`)}
+            ${fld('Posti PR',           `<input type="number" id="ef-capacity-pr"  class="field w-full" placeholder="—" min="0" value="${esc(ev.capacityPr||'')}">`, 'Posti riservati al tuo listino')}
+            ${fld('Posti lista',        `<input type="number" id="ef-capacity-lst" class="field w-full" placeholder="—" min="0" value="${esc(ev.capacityList||'')}">`)}
+            ${fld('Età minima',         `<input type="number" id="ef-minage"       class="field w-full" placeholder="18" min="0" max="99" value="${esc(ev.minAge||'')}">`)}
+            ${fld('Referente / PR resp.', `<input id="ef-contact" class="field w-full" placeholder="Nome referente" value="${esc(ev.contact||'')}">`)}
+            ${fld('Telefono referente', `<input id="ef-contact-phone" class="field w-full" placeholder="+39..." value="${esc(ev.contactPhone||'')}">`)}
+          </div>
+        </div>` : ''}
+
+        <!-- EXTRA -->
+        ${cfgGet('evtModal','sectionExtra') ? `
+        <div class="section-block">
+          <p class="section-title"><i class="ti ti-link"></i>Link & Extra</p>
+          <div class="grid-2" style="gap:12px;margin-bottom:12px">
+            ${fld('Link evento (Facebook / Eventbrite…)', `<input id="ef-eventlink" class="field w-full" placeholder="https://..." value="${esc(ev.eventlink||'')}">`)}
+            ${fld('Hashtag / Profilo social',             `<input id="ef-social"    class="field w-full" placeholder="#hashtag o @profilo" value="${esc(ev.social||'')}">`)}
+          </div>
+          ${fld('Note interne', `<textarea id="ef-notes" class="field w-full" rows="3" placeholder="Note, istruzioni, indicazioni speciali...">${esc(ev.notes||'')}</textarea>`)}
+        </div>` : ''}
+
+        <!-- COLORE ETICHETTA -->
+        ${cfgGet('evtModal','sectionColore') ? `
+        <div class="section-block" style="margin-bottom:0">
+          <p class="section-title"><i class="ti ti-palette"></i>Colore etichetta</p>
+          <div class="flex gap-3 items-center" style="flex-wrap:wrap">
+            ${colorSwatches}
+            <input type="hidden" id="ef-color" value="${curColor}">
+            <span class="text-dim text-xs" style="margin-left:4px">Colore visivo nella vista settimana e nei badge</span>
+          </div>
+        </div>` : `<input type="hidden" id="ef-color" value="${curColor}">`}
+
+        ${!isEdit && cfgGet('evtModal','sectionRicorrenza') ? `
+        <!-- RICORRENZA (solo creazione) -->
+        <div class="section-block" style="margin-top:20px;margin-bottom:0">
+          <p class="section-title"><i class="ti ti-repeat"></i>Ricorrenza (solo in creazione)</p>
+          <div class="form-bg" style="margin-bottom:0">
+            <label class="field-checkbox mb-2">
+              <input type="checkbox" id="ef-is-recurring" onchange="document.getElementById('recur-opts').style.display=this.checked?'block':'none'">
+              <span class="font-medium" style="font-size:13px;color:var(--gold)">Genera serie di eventi ricorrenti</span>
+            </label>
+            <div id="recur-opts" style="display:none">
+              <div class="grid-2" style="gap:12px;margin-bottom:12px">
+                ${fld('Data fine serie *', `<input type="date" id="ef-recur-end" class="field w-full">`)}
+                ${fld('Intervallo', `<select id="ef-recur-interval" class="field w-full"><option value="weekly">Settimanale</option><option value="biweekly">Bisettimanale</option><option value="monthly">Mensile</option></select>`)}
+              </div>
+              <label class="field-label">Giorni della settimana (per intervallo settimanale)</label>
+              <div class="flex gap-3 mt-2" style="flex-wrap:wrap">
+                ${[['1','Lun'],['2','Mar'],['3','Mer'],['4','Gio'],['5','Ven'],['6','Sab'],['0','Dom']].map(([vv,l])=>
+                  `<label class="field-checkbox"><input type="checkbox" name="ef-recur-days" value="${vv}"> <span>${l}</span></label>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>` : ''}
+
+      </div><!-- /body -->
+
+      <div class="evt-modal-footer">
+        <div>
+          ${isEdit ? `<p class="text-dim text-xs">ID: <span style="font-family:var(--font-m)">${id}</span>${ev.seriesId?` · Serie: <span style="font-family:var(--font-m);color:var(--violet)">${ev.seriesId}</span>`:''}</p>` : ''}
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost" onclick="closeEvtModal()">Annulla</button>
+          <button class="btn btn-primary" onclick="saveEvento()"><i class="ti ti-check"></i> ${isEdit?'Salva modifiche':'Crea evento'}</button>
+        </div>
+      </div>
+
+    </div>
+  </div>`;
+
+  document.getElementById('modal-root').innerHTML = modal;
+  setTimeout(()=>document.getElementById('ef-name')?.focus(), 80);
+}
+
+function closeEvtModal() {
+  document.getElementById('modal-root').innerHTML = '';
+  S.editEvtId = null;
+  S.showEvtForm = false;
+}
+
+function evtPickColor(c) {
+  document.getElementById('ef-color').value = c;
+  document.querySelectorAll('.color-swatch').forEach(el => {
+    el.classList.toggle('active', el.title===c);
+  });
+}
+
+function evtPickStatus(v) {
+  document.getElementById('ef-status').value = v;
+  const map = {available:'#FBB040', paid:'#5DE0A5', cancelled:'#F87171', soldout:'#A78BFA', private:'#60A5FA'};
+  document.querySelectorAll('.status-chip').forEach(el => {
+    const sv = el.id.replace('schip-','');
+    const isActive = sv === v;
+    el.classList.toggle('active-chip', isActive);
+    el.style.borderWidth = isActive ? '2px' : '1px';
+    el.style.borderColor = isActive ? (map[sv]||'var(--border)') : 'var(--border)';
+    el.style.background  = isActive ? (map[sv]+'22'||'') : '';
+    el.style.color       = isActive ? '' : 'var(--text2)';
+  });
+}
+
+function delEventoFromModal(id) {
+  closeEvtModal();
+  delEvento(id);
+}
+
+function renderEventi() {
+  const cntAvail    = S.eventi.filter(e=>e.status==='available').length;
+  const cntPaid     = S.eventi.filter(e=>e.status==='paid').length;
+  const cntAll      = S.eventi.length;
+  const cntCancelled= S.eventi.filter(e=>e.status==='cancelled').length;
+  const cntSoldout  = S.eventi.filter(e=>e.status==='soldout').length;
+  const cntPrivate  = S.eventi.filter(e=>e.status==='private').length;
+
+  // --- filtered pool ---
+  let pool = [...S.eventi];
+  // status filter (skip for 'all' in week view)
+  if (S.evtSub !== 'all') pool = pool.filter(e => e.status === S.evtSub);
+  // search
+  if (S.evtSearch) {
+    const q = S.evtSearch.toLowerCase();
+    pool = pool.filter(e => e.name.toLowerCase().includes(q) || (e.venue||'').toLowerCase().includes(q) || (e.tag||'').toLowerCase().includes(q));
+  }
+  // period filter (only in table view)
+  if (S.evtView === 'table' && S.evtPeriod !== 'all') {
+    const now = new Date(); now.setHours(0,0,0,0);
+    const todayStr = isoDate(now);
+    if (S.evtPeriod === 'week') {
+      const days = getWeekDays(0);
+      const from = isoDate(days[0]); const to = isoDate(days[6]);
+      pool = pool.filter(e => e.date >= from && e.date <= to);
+    } else if (S.evtPeriod === 'month') {
+      const y = now.getFullYear(); const m = String(now.getMonth()+1).padStart(2,'0');
+      pool = pool.filter(e => e.date && e.date.startsWith(`${y}-${m}`));
+    } else if (S.evtPeriod === 'next30') {
+      const end = new Date(now); end.setDate(end.getDate()+30);
+      pool = pool.filter(e => e.date >= todayStr && e.date <= isoDate(end));
+    }
+  }
+
+  // sort
+  if (S.sort.key) {
+    pool.sort((a,b) => {
+      let v1=a[S.sort.key], v2=b[S.sort.key];
+      if(['price','capacity','ts'].includes(S.sort.key)){v1=+v1||0;v2=+v2||0;}
+      return (v1<v2?-1:v1>v2?1:0)*S.sort.dir;
+    });
+  } else {
+    pool.sort((a,b) => new Date(a.date)-new Date(b.date));
+  }
+
+  /* ── top bar ── */
+  const topBar = `
+    <div class="flex items-center justify-between mb-3" style="flex-wrap:wrap;gap:10px">
+      <!-- left: status pills + period pills -->
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="filter-bar">
+          <button class="filter-pill${S.evtSub==='available'?' active':''}" onclick="setEvtSub('available')">
+            <i class="ti ti-circle" style="font-size:9px;margin-right:3px;color:var(--warn)"></i>Disponibili (${cntAvail})
+          </button>
+          <button class="filter-pill${S.evtSub==='paid'?' active':''}" onclick="setEvtSub('paid')">
+            <i class="ti ti-circle-check" style="font-size:10px;margin-right:3px;color:var(--success)"></i>Pagati (${cntPaid})
+          </button>
+          ${cntSoldout>0?`<button class="filter-pill${S.evtSub==='soldout'?' active':''}" onclick="setEvtSub('soldout')"><i class="ti ti-circle" style="font-size:9px;margin-right:3px;color:var(--violet)"></i>Sold Out (${cntSoldout})</button>`:''}
+          ${cntPrivate>0?`<button class="filter-pill${S.evtSub==='private'?' active':''}" onclick="setEvtSub('private')"><i class="ti ti-lock" style="font-size:10px;margin-right:3px;color:var(--info)"></i>Privati (${cntPrivate})</button>`:''}
+          ${cntCancelled>0?`<button class="filter-pill${S.evtSub==='cancelled'?' active':''}" onclick="setEvtSub('cancelled')"><i class="ti ti-ban" style="font-size:10px;margin-right:3px;color:var(--danger)"></i>Cancellati (${cntCancelled})</button>`:''}
+          <button class="filter-pill${S.evtSub==='all'?' active':''}" onclick="setEvtSub('all')">Tutti (${cntAll})</button>
+        </div>
+        ${S.evtView==='table' ? `<div class="filter-bar">
+          ${[['all','Tutte le date'],['week','Questa settimana'],['month','Questo mese'],['next30','Prossimi 30gg']].map(([v,l])=>
+            `<button class="filter-pill${S.evtPeriod===v?' active':''}" style="font-size:11px;padding:3px 10px" onclick="setEvtPeriod('${v}')">${l}</button>`).join('')}
+        </div>` : ''}
+      </div>
+      <!-- right: search + view toggle + new -->
+      <div class="flex gap-2 items-center" style="flex-wrap:wrap">
+        <div class="search-wrap" style="width:190px">
+          <i class="ti ti-search search-ico"></i>
+          <input class="field w-full" placeholder="Cerca…" value="${esc(S.evtSearch)}" oninput="S.evtSearch=this.value;render()">
+        </div>
+        <div class="view-toggle">
+          <button class="view-toggle-btn${S.evtView==='table'?' active':''}" onclick="setEvtView('table')" title="Vista tabella">
+            <i class="ti ti-list"></i><span class="hide-mobile">Lista</span>
+          </button>
+          <button class="view-toggle-btn${S.evtView==='week'?' active':''}" onclick="setEvtView('week')" title="Vista settimanale">
+            <i class="ti ti-calendar-week"></i><span class="hide-mobile">Settimana</span>
+          </button>
+        </div>
+        ${btn('Nuovo evento','openEvtModal(null)','btn-primary','ti-plus')}
+      </div>
+    </div>`;
+
+  /* ── week calendar view ── */
+  if (S.evtView === 'week') {
+    const weekDays = getWeekDays(S.evtWeekOffset);
+    const dayNames = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+    const fromStr = isoDate(weekDays[0]); const toStr = isoDate(weekDays[6]);
+    const fmt = d => d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'});
+    const weekTitle = `${fmt(weekDays[0])} – ${fmt(weekDays[6])} ${weekDays[0].getFullYear()}`;
+
+    const weekNav = `<div class="card mb-3">
+      <div class="flex items-center justify-between">
+        <div class="week-nav">
+          ${btn('','setEvtWeekOffset(-1)','btn-ghost','ti-chevron-left')}
+          <span class="week-title">${weekTitle}</span>
+          ${btn('','setEvtWeekOffset(1)','btn-ghost','ti-chevron-right')}
+        </div>
+        <div class="flex gap-2">
+          ${S.evtWeekOffset!==0 ? `<button class="btn btn-ghost" style="font-size:12px" onclick="S.evtWeekOffset=0;render()"><i class="ti ti-calendar-today"></i> Oggi</button>` : ''}
+          <span class="text-dim text-sm" style="align-self:center">${pool.filter(e=>e.date>=fromStr&&e.date<=toStr).length} eventi</span>
+        </div>
+      </div>
+      <div class="week-grid" style="margin-top:12px">
+        ${weekDays.map((d,i) => {
+          const ds = isoDate(d);
+          const dayEvts = S.eventi.filter(e => {
+            if(S.evtSub!=='all' && e.status!==S.evtSub) return false;
+            if(S.evtSearch){const q=S.evtSearch.toLowerCase();if(!e.name.toLowerCase().includes(q)&&!(e.venue||'').toLowerCase().includes(q))return false;}
+            return e.date===ds;
+          }).sort((a,b)=>a.name.localeCompare(b.name));
+          const isWknd = i>=5;
+          return `<div>
+            <div class="week-col-header${isToday(d)?' today':''}${isWknd?' text-dim':''}">
+              <div class="day-name">${dayNames[i]}</div>
+              <div class="day-num">${d.getDate()}</div>
+            </div>
+            <div class="week-col" style="padding-top:8px">
+              ${dayEvts.length===0
+                ? `<div class="week-empty-day">·</div>`
+                : dayEvts.map(e => {
+                    const evtAcc = S.acconti.filter(a=>a.eventId===e.id);
+                    const cap = parseInt(e.capacity)||0;
+                    const occ = evtAcc.length;
+                    const capPct = cap>0?pct(occ,cap):0;
+                    const capColor = capPct>=90?'var(--danger)':capPct>=70?'var(--warn)':'var(--success)';
+                    const isAvail = e.status==='available';
+                    return `<div class="week-event-card ${e.seriesId?'series':'status-'+e.status}" onclick="openEvtModal('${e.id}')" title="${esc(e.name)}${e.venue?' · '+esc(e.venue):''}">
+                      <div class="ev-name">${esc(e.name)}</div>
+                      ${e.venue?`<div class="ev-venue"><i class="ti ti-map-pin" style="font-size:9px"></i> ${esc(e.venue)}</div>`:''}
+                      <div class="ev-meta">
+                        <span class="ev-price">${e.price>0?eur(e.price):''}</span>
+                        <span class="ev-occ">${occ>0?`${occ}${cap>0?' / '+cap:' preno'}`:(cap>0?`0/${cap}`:'')}</span>
+                      </div>
+                      ${cap>0?`<div class="ev-cap-bar"><div class="ev-cap-fill" style="width:${capPct}%;background:${capColor}"></div></div>`:''}
+                      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+                        ${isAvail
+                          ? `<button class="btn btn-success-sm" style="font-size:10px;padding:2px 7px" onclick="event.stopPropagation();markPaid('${e.id}')"><i class="ti ti-circle-check"></i></button>`
+                          : `<button class="btn btn-ghost" style="font-size:10px;padding:2px 7px" onclick="event.stopPropagation();markAvail('${e.id}')"><i class="ti ti-rotate-clockwise"></i></button>`}
+                        <button class="btn-icon" onclick="event.stopPropagation();openEvtModal('${e.id}')" title="Modifica"><i class="ti ti-edit" style="font-size:13px"></i></button>
+                        <button class="btn-icon danger" onclick="event.stopPropagation();delEvento('${e.id}')" title="Elimina"><i class="ti ti-trash" style="font-size:13px"></i></button>
+                      </div>
+                    </div>`;
+                  }).join('')}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+    return `${topBar}${weekNav}${S.selEvent?renderEventoDetail(S.selEvent):''}`;
+  }
+
+  /* ── table view (with month grouping) ── */
+  if (pool.length === 0) {
+    const label = S.evtSub==='available'?'disponibili':S.evtSub==='paid'?'pagati':'';
+    return `${topBar}<div class="card">${empty('ti-calendar-off',`Nessun evento ${label} trovato`)}</div>${S.selEvent?renderEventoDetail(S.selEvent):''}`;
+  }
+
+  // group by month
+  const months = {};
+  pool.forEach(e => {
+    const key = e.date ? e.date.slice(0,7) : '—';
+    if (!months[key]) months[key] = [];
+    months[key].push(e);
+  });
+
+  const fmtMonth = k => {
+    if(k==='—') return 'Senza data';
+    const [y,m] = k.split('-');
+    return new Date(+y,+m-1,1).toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+  };
+
+  const colCount = ['colNome','colData','colOrario','colVenue','colCitta','colPrezzo','colCapienza','colAcconti','colTipo','colDresscode','colStato'].filter(k=>cfgGet('eventi',k)).length + 1;
+  const tableHTML = `<div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead><tr>
+        ${cfgGet('eventi','colNome')     ? thSortable('Nome','name') : ''}
+        ${cfgGet('eventi','colData')     ? thSortable('Data','date') : ''}
+        ${cfgGet('eventi','colOrario')   ? '<th class="hide-mobile">Orario</th>' : ''}
+        ${cfgGet('eventi','colVenue')    ? thSortable('Venue','venue','hide-mobile') : ''}
+        ${cfgGet('eventi','colCitta')    ? '<th class="hide-mobile">Città</th>' : ''}
+        ${cfgGet('eventi','colPrezzo')   ? thSortable('Prezzo','price') : ''}
+        ${cfgGet('eventi','colCapienza') ? '<th>Capienza</th>' : ''}
+        ${cfgGet('eventi','colAcconti')  ? '<th>Acconti</th>' : ''}
+        ${cfgGet('eventi','colTipo')     ? '<th class="hide-mobile">Tipo</th>' : ''}
+        ${cfgGet('eventi','colDresscode')? '<th class="hide-mobile">Dress Code</th>' : ''}
+        ${cfgGet('eventi','colStato')    ? '<th>Stato</th>' : ''}
+        <th></th>
+      </tr></thead>
+      <tbody>
+      ${Object.entries(months).map(([mk, evts]) => `
+        <tr><td colspan="${colCount}" style="padding:0">
+          <div class="month-separator"><i class="ti ti-calendar" style="font-size:12px"></i>${fmtMonth(mk)} <span style="background:var(--bg3);border-radius:999px;padding:1px 8px;font-size:10px">${evts.length}</span></div>
+        </td></tr>
+        ${evts.map(e => {
+          const evtAcc  = S.acconti.filter(a=>a.eventId===e.id);
+          const totAcc  = evtAcc.reduce((s,a)=>s+(+a.amount||0),0);
+          const cap     = parseInt(e.capacity)||0;
+          const occ     = evtAcc.length;
+          const capPct  = cap>0 ? pct(occ,cap) : 0;
+          const capColor= capPct>=90?'var(--danger)':capPct>=70?'var(--warn)':'var(--success)';
+          const isAvail = e.status==='available';
+          const isSel   = S.selEvent === e.id;
+          return `<tr style="cursor:pointer;${isSel?'background:var(--gold-lo);outline:1px solid var(--gold-md);outline-offset:-1px;':''}" onclick="openEvtModal('${e.id}')">
+            ${cfgGet('eventi','colNome') ? `<td><div class="evt-row-name">${e.seriesId?`<span class="series-dot" title="Evento ricorrente"></span>`:''}<span class="font-medium">${esc(e.name)}</span></div></td>` : ''}
+            ${cfgGet('eventi','colData')     ? `<td class="text-dim" style="white-space:nowrap">${dat(e.date)}</td>` : ''}
+            ${cfgGet('eventi','colOrario')   ? `<td class="text-dim hide-mobile" style="white-space:nowrap">${e.timeStart||''}${e.timeEnd?' – '+e.timeEnd:''}</td>` : ''}
+            ${cfgGet('eventi','colVenue')    ? `<td class="text-muted truncate hide-mobile" style="max-width:110px">${esc(e.venue||'—')}</td>` : ''}
+            ${cfgGet('eventi','colCitta')    ? `<td class="text-dim hide-mobile">${esc(e.city||'—')}</td>` : ''}
+            ${cfgGet('eventi','colPrezzo')   ? `<td><span class="text-mono font-medium">${e.price>0?eur(e.price):'—'}</span></td>` : ''}
+            ${cfgGet('eventi','colCapienza') ? `<td>${cap>0?`<span class="text-sm" style="color:${capColor}">${occ}/${cap}</span><div class="cap-bar"><div class="cap-fill" style="width:${capPct}%;background:${capColor}"></div></div>`:`<span class="text-dim">—</span>`}</td>` : ''}
+            ${cfgGet('eventi','colAcconti')  ? `<td>${evtAcc.length>0?`<span style="font-family:var(--font-m);font-size:12px;display:block">${evtAcc.length} preno</span><span class="text-xs text-gold">${eur(totAcc)}</span>`:`<span class="text-dim">—</span>`}</td>` : ''}
+            ${cfgGet('eventi','colTipo')     ? `<td class="hide-mobile">${e.tag?badge(e.tag,'blue'):''}</td>` : ''}
+            ${cfgGet('eventi','colDresscode')? `<td class="hide-mobile">${e.dresscode?badge(e.dresscode,'neutral'):''}</td>` : ''}
+            ${cfgGet('eventi','colStato')    ? `<td>${evtStatusBadge(e)}</td>` : ''}
+            <td onclick="event.stopPropagation()"><div class="flex gap-2" style="flex-wrap:nowrap">
+              ${btnI('ti-edit',`openEvtModal('${e.id}')`,false,'Modifica')}
+              ${isAvail
+                ? `<button class="btn btn-success-sm" onclick="markPaid('${e.id}')"><i class="ti ti-circle-check"></i> Paga</button>`
+                : `<button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" onclick="markAvail('${e.id}')"><i class="ti ti-rotate-clockwise"></i> Riapri</button>`}
+              ${btnI('ti-trash',`delEvento('${e.id}')`,true,'Elimina')}
+            </div></td>
+          </tr>`;
+        }).join('')}
+      `).join('')}
+      </tbody>
+    </table>
+  </div>
+  ${S.selEvent ? renderEventoDetail(S.selEvent) : ''}`;
+
+  return `${topBar}${tableHTML}`;
+}
+
+function evtStatusBadge(e) {
+  const map = {
+    available: ['Disponibile','amber'],
+    paid:      ['Pagato','green'],
+    cancelled: ['Cancellato','red'],
+    soldout:   ['Sold Out','violet'],
+    private:   ['Privato','blue'],
+  };
+  const [t,c] = map[e.status]||['—','neutral'];
+  if(e.color && e.color !== '#C9A84C') {
+    return `<span class="badge" style="background:${e.color}22;color:${e.color};border:1px solid ${e.color}44">${t}</span>`;
+  }
+  return badge(t,c);
+}
+function renderEventoDetail(id) {
+  const e = S.eventi.find(x=>x.id===id);
+  if(!e) return '';
+
+  const evtAcc = S.acconti.filter(a=>a.eventId===id);
+  const totAcc = evtAcc.reduce((s,a)=>s+(+a.amount||0),0);
+  const confAcc= evtAcc.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+  const cap    = parseInt(e.capacity)||0;
+  const occ    = evtAcc.length;
+  const capPct = cap>0 ? pct(occ,cap) : 0;
+  const capColor= capPct>=90?'var(--danger)':capPct>=70?'var(--warn)':'var(--success)';
+  const isAvail = e.status==='available';
+
+  // Group acconti by group
+  const byGroup = {};
+  evtAcc.forEach(a => {
+    if(!byGroup[a.groupId]) byGroup[a.groupId] = [];
+    byGroup[a.groupId].push(a);
+  });
+
+  const groupRows = Object.entries(byGroup).map(([gId, accs]) => {
+    const g = S.gruppi.find(x=>x.id===gId);
+    const gTot  = accs.reduce((s,a)=>s+(+a.amount||0),0);
+    const gConf = accs.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+    const gDue  = accs.reduce((s,a)=>s+(+a.totalDue||0),0);
+    return `<div style="border:1px solid var(--border);border-radius:var(--r-md);padding:11px 14px;margin-bottom:8px">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          ${avatar(g?.name||'?')}
+          <div>
+            <p class="font-medium" style="font-size:13px">${esc(g?.name||'Gruppo eliminato')}</p>
+            <p class="text-dim text-xs">${accs.length} accont${accs.length===1?'o':'i'}</p>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <p class="text-mono font-medium text-gold">${eur(gTot)}</p>
+          ${gDue>0?`<p class="text-xs text-dim">su ${eur(gDue)}</p>`:''}
+        </div>
+      </div>
+      <div class="flex gap-3" style="flex-wrap:wrap">
+        ${accs.map(a=>`<span style="font-size:11px;background:var(--bg3);padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px">${accBadge(a.status)} <span class="text-mono">${eur(a.amount)}</span> ${dat(a.date)?`<span class="text-dim">${dat(a.date)}</span>`:''}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="card mt-4" style="border-color:var(--gold-md);border-width:1px">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <h3 class="text-head" style="font-size:18px;font-weight:600">${esc(e.name)}</h3>
+        <p class="text-dim text-sm" style="margin-top:2px">${dat(e.date)}${e.venue?' · '+esc(e.venue):''}</p>
+      </div>
+      <div class="flex gap-2 items-center">
+        ${e.tag?badge(e.tag,'blue'):''}
+        ${isAvail?badge('Disponibile','amber'):badge('Pagato','green')}
+        ${btnI('ti-edit',`openEvtModal('${e.id}')`,false,'Modifica evento')}
+        ${isAvail
+          ? `<button class="btn btn-success-sm" onclick="markPaid('${e.id}')"><i class="ti ti-circle-check"></i> Segna pagato</button>`
+          : `<button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="markAvail('${e.id}')"><i class="ti ti-rotate-clockwise"></i> Riapri</button>`}
+        ${btnI('ti-trash',`delEvento('${e.id}')`,true,'Elimina evento')}
+        ${btnI('ti-x',`deselectEvento()`,false,'Chiudi dettaglio')}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px">
+      ${e.price>0?`<div style="background:var(--bg2);border-radius:var(--r-md);padding:10px 12px"><p class="text-xs text-dim" style="margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">Prezzo</p><p class="text-mono font-medium">${eur(e.price)}</p></div>`:''}
+      ${cap>0?`<div style="background:var(--bg2);border-radius:var(--r-md);padding:10px 12px"><p class="text-xs text-dim" style="margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">Capienza</p><p class="text-mono font-medium" style="color:${capColor}">${occ}/${cap} <span class="text-xs">(${capPct}%)</span></p><div class="cap-bar mt-1"><div class="cap-fill" style="width:${capPct}%;background:${capColor}"></div></div></div>`:''}
+      <div style="background:var(--bg2);border-radius:var(--r-md);padding:10px 12px"><p class="text-xs text-dim" style="margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">Acconti tot.</p><p class="text-mono font-medium text-gold">${eur(totAcc)}</p></div>
+      <div style="background:var(--bg2);border-radius:var(--r-md);padding:10px 12px"><p class="text-xs text-dim" style="margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">Confermati</p><p class="text-mono font-medium text-success">${eur(confAcc)}</p></div>
+      <div style="background:var(--bg2);border-radius:var(--r-md);padding:10px 12px"><p class="text-xs text-dim" style="margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">Gruppi</p><p class="text-mono font-medium">${Object.keys(byGroup).length}</p></div>
+    </div>
+    ${e.notes?`<p class="text-muted text-sm mb-3" style="padding:8px 12px;background:var(--bg2);border-radius:var(--r-sm)">${esc(e.notes)}</p>`:''}
+    ${cap>0?`<div class="cap-bar mb-4" style="height:5px"><div class="cap-fill" style="width:${capPct}%;background:${capColor}"></div></div>`:''}
+    ${evtAcc.length===0
+      ? `<p class="text-dim text-sm">Nessun acconto registrato per questo evento.</p>`
+      : `<p style="font-weight:500;font-size:13px;margin-bottom:10px"><i class="ti ti-receipt" style="font-size:13px;vertical-align:-1px;margin-right:5px;color:var(--gold)"></i>Acconti per gruppo (${evtAcc.length})</p>${groupRows}`}
+  </div>`;
+}
+
+/* ── SETTINGS ─────────────────────────────────────────────── */
+const SETTINGS_SECTIONS = [
+  {id:'tabs',      icon:'ti-layout-navbar', label:'Sezioni (Tab)'},
+  {id:'dash',      icon:'ti-layout-dashboard', label:'Dashboard'},
+  {id:'gruppi',    icon:'ti-users', label:'Gruppi'},
+  {id:'acconti',   icon:'ti-receipt', label:'Acconti'},
+  {id:'eventi',    icon:'ti-calendar-event', label:'Eventi'},
+  {id:'evtModal',  icon:'ti-forms', label:'Form Evento'},
+  {id:'ui',        icon:'ti-brush', label:'Interfaccia'},
+];
+
+// Current settings panel sub-section
+if(!window._settingsSub) window._settingsSub = 'tabs';
+
+function setSettingsSub(id) { window._settingsSub = id; render(); }
+
+function mkToggle(section, key, label, desc='') {
+  const checked = cfgGet(section, key);
+  return `<div class="setting-row" onclick="document.getElementById('tgl-${section}-${key}').click()">
+    <div class="setting-row-info">
+      <div class="setting-row-label">${label}</div>
+      ${desc ? `<div class="setting-row-desc">${desc}</div>` : ''}
+    </div>
+    <div class="toggle-wrap">
+      <label class="toggle" onclick="event.stopPropagation()">
+        <input type="checkbox" id="tgl-${section}-${key}" ${checked?'checked':''} onchange="toggleCFG('${section}','${key}',this)">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </label>
+    </div>
+  </div>`;
+}
+
+function renderSettings() {
+  const sub = window._settingsSub || 'tabs';
+
+  const sideNav = `<div class="settings-nav">
+    ${SETTINGS_SECTIONS.map(s => `
+      <div class="settings-nav-item${sub===s.id?' active':''}" onclick="setSettingsSub('${s.id}')">
+        <i class="ti ${s.icon}"></i>${s.label}
+      </div>`).join('')}
+  </div>`;
+
+  let panel = '';
+
+  if(sub === 'tabs') {
+    panel = `
+      <div class="settings-title">Sezioni visibili</div>
+      <div class="settings-subtitle">Scegli quali tab mostrare nella barra di navigazione. Le sezioni nascoste rimangono accessibili dalle impostazioni.</div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-layout-navbar"></i> Tab di navigazione</div>
+        ${mkToggle('tabs','dashboard','Dashboard','Panoramica generale con metriche e riepilogo')}
+        ${mkToggle('tabs','gruppi','Gruppi clienti','Gestione gruppi, membri e acconti associati')}
+        ${mkToggle('tabs','acconti','Acconti','Registro completo di tutti i pagamenti')}
+        ${mkToggle('tabs','eventi','Eventi','Calendario e lista degli eventi')}
+        ${mkToggle('tabs','stats','Statistiche','Grafici e analisi degli incassi')}
+        ${mkToggle('tabs','pacchetti','Pacchetti','Pacchetti VIP e prenotazioni')}
+        ${mkToggle('tabs','liste','Liste ospiti','Check-in e liste di ingresso per evento')}
+      </div>`;
+  }
+  else if(sub === 'dash') {
+    panel = `
+      <div class="settings-title">Dashboard</div>
+      <div class="settings-subtitle">Personalizza le metriche e i widget visibili nella schermata principale.</div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-chart-bar"></i> Metriche in cima</div>
+        ${mkToggle('dash','metricGruppi','Numero Gruppi','Tile con conteggio gruppi e membri totali')}
+        ${mkToggle('dash','metricEventi','Eventi Attivi','Tile con conteggio eventi disponibili e pagati')}
+        ${mkToggle('dash','metricIncasso','Totale Incassato','Tile con somma di tutti gli acconti')}
+        ${mkToggle('dash','metricConfermato','Incasso Confermato','Tile con soli acconti confermati e percentuale')}
+        ${mkToggle('dash','metricCrediti','Crediti da saldare','Tile rossa con importo ancora da incassare')}
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-layout-cards"></i> Card informative</div>
+        ${mkToggle('dash','cardAcconti','Ultimi acconti','Lista degli acconti inseriti più di recente')}
+        ${mkToggle('dash','cardEventi','Prossimi eventi','Lista degli eventi in programma')}
+        ${mkToggle('dash','cardPacchetti','Pacchetti','Riepilogo vendite pacchetti VIP')}
+      </div>`;
+  }
+  else if(sub === 'gruppi') {
+    panel = `
+      <div class="settings-title">Scheda Gruppo</div>
+      <div class="settings-subtitle">Controlla quali sezioni e informazioni mostrare nel pannello dettaglio di un gruppo.</div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-layout-list"></i> Sezioni nel pannello</div>
+        ${mkToggle('gruppi','sectionMembri','Sezione Membri','Lista dei componenti del gruppo con contatti')}
+        ${mkToggle('gruppi','sectionEventi','Sezione Eventi acquistati','Lista degli eventi con relativi acconti')}
+        ${mkToggle('gruppi','sectionVacanze','Sezione Periodi di assenza','Periodi in cui il gruppo non è disponibile')}
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-user"></i> Campi membro</div>
+        ${mkToggle('gruppi','memberPhone','Telefono membro','Mostra il numero di telefono nella scheda membro')}
+        ${mkToggle('gruppi','memberEmail','Email membro','Mostra l\'indirizzo email nella scheda membro')}
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-currency-euro"></i> Info finanziarie</div>
+        ${mkToggle('gruppi','showSaldo','Saldo residuo','Mostra il saldo ancora da saldare per il gruppo')}
+        ${mkToggle('gruppi','showMetodi','Metodi di pagamento usati','Mostra i metodi di pagamento per ogni evento')}
+      </div>`;
+  }
+  else if(sub === 'acconti') {
+    panel = `
+      <div class="settings-title">Tabella Acconti</div>
+      <div class="settings-subtitle">Scegli quali colonne mostrare nella tabella degli acconti.</div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-columns"></i> Colonne visibili</div>
+        ${mkToggle('acconti','colGruppo','Gruppo','Nome del gruppo cliente associato all\'acconto')}
+        ${mkToggle('acconti','colEvento','Evento','Evento per cui è stato versato l\'acconto')}
+        ${mkToggle('acconti','colData','Data versamento','Data in cui è stato ricevuto l\'acconto')}
+        ${mkToggle('acconti','colImporto','Importo versato','Importo dell\'acconto ricevuto')}
+        ${mkToggle('acconti','colTotDovuto','Totale dovuto','Importo totale concordato (non solo l\'acconto)')}
+        ${mkToggle('acconti','colMetodo','Metodo di pagamento','Contanti, Bonifico, Satispay…')}
+        ${mkToggle('acconti','colStato','Stato','In attesa / Confermato / Annullato')}
+        ${mkToggle('acconti','colNote','Note','Campo note testuali')}
+      </div>`;
+  }
+  else if(sub === 'eventi') {
+    panel = `
+      <div class="settings-title">Tabella Eventi</div>
+      <div class="settings-subtitle">Scegli quali colonne mostrare nella tabella degli eventi e nella vista settimana.</div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-columns"></i> Colonne visibili</div>
+        ${mkToggle('eventi','colNome','Nome evento','Titolo dell\'evento (sempre visibile)')}
+        ${mkToggle('eventi','colData','Data','Data dell\'evento')}
+        ${mkToggle('eventi','colOrario','Orario','Ora di inizio e fine evento')}
+        ${mkToggle('eventi','colVenue','Venue / Locale','Nome del locale o location')}
+        ${mkToggle('eventi','colCitta','Città','Città dove si svolge l\'evento')}
+        ${mkToggle('eventi','colPrezzo','Prezzo PR','Prezzo base del tuo listino')}
+        ${mkToggle('eventi','colCapienza','Capienza','Numero di posti e barra di occupazione')}
+        ${mkToggle('eventi','colAcconti','Acconti','Numero e totale degli acconti registrati')}
+        ${mkToggle('eventi','colTipo','Tipo / Tag','Categoria evento (Serata, Aperitivo…)')}
+        ${mkToggle('eventi','colDresscode','Dress Code','Dress code richiesto')}
+        ${mkToggle('eventi','colStato','Stato','Disponibile / Pagato / Sold Out…')}
+      </div>`;
+  }
+  else if(sub === 'evtModal') {
+    panel = `
+      <div class="settings-title">Form Creazione / Modifica Evento</div>
+      <div class="settings-subtitle">Scegli quali sezioni mostrare nel form quando crei o modifichi un evento. Le sezioni nascoste non verranno richieste ma i dati già salvati vengono conservati.</div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-forms"></i> Sezioni del form</div>
+        ${mkToggle('evtModal','sectionStatus','Stato evento','Chip per impostare lo stato: Disponibile, Pagato, Sold Out…')}
+        ${mkToggle('evtModal','sectionBase','Informazioni base','Nome, data, orari, tipo, dress code — sempre consigliato')}
+        ${mkToggle('evtModal','sectionVenue','Venue & Luogo','Nome locale, città, indirizzo, link Maps')}
+        ${mkToggle('evtModal','sectionPrezzi','Prezzi','Prezzo PR, donna, uomo, lista, tavolo')}
+        ${mkToggle('evtModal','sectionLogistica','Capienza & Logistica','Posti totali, PR, lista, età minima, referente')}
+        ${mkToggle('evtModal','sectionExtra','Link & Note','Link evento, hashtag social, note interne')}
+        ${mkToggle('evtModal','sectionColore','Colore etichetta','Selettore colore per badge e vista settimana')}
+        ${mkToggle('evtModal','sectionRicorrenza','Ricorrenza','Opzione per generare eventi ripetuti (solo in creazione)')}
+      </div>`;
+  }
+  else if(sub === 'ui') {
+    panel = `
+      <div class="settings-title">Interfaccia</div>
+      <div class="settings-subtitle">Preferenze visive e di layout dell\'applicazione.</div>
+      <div class="settings-group">
+        <div class="settings-group-title"><i class="ti ti-layout"></i> Layout tabelle</div>
+        ${mkToggle('ui','compactTable','Tabelle compatte','Riduce il padding delle righe nelle tabelle')}
+        ${mkToggle('ui','showRowNumbers','Numerazione righe','Aggiunge un numero progressivo a ogni riga')}
+      </div>`;
+  }
+
+  return `<div class="settings-layout">
+    ${sideNav}
+    <div class="settings-section">
+      ${panel}
+      <div class="settings-reset-bar">
+        <div>
+          <p style="font-size:13px;font-weight:500">Ripristina impostazioni</p>
+          <p style="font-size:11px;color:var(--danger);margin-top:1px">Tutte le personalizzazioni torneranno ai valori predefiniti</p>
+        </div>
+        <button class="btn btn-danger" onclick="resetCFG()"><i class="ti ti-refresh"></i> Ripristina tutto</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── STATISTICHE ──────────────────────────────────────────── */
+function renderStats() {
+  const totAcc  = S.acconti.reduce((s,a)=>s+(+a.amount||0),0);
+  const confAcc = S.acconti.filter(a=>a.status==='confirmed').reduce((s,a)=>s+(+a.amount||0),0);
+  const pendAcc = S.acconti.filter(a=>a.status==='pending').reduce((s,a)=>s+(+a.amount||0),0);
+  const cancCnt = S.acconti.filter(a=>a.status==='cancelled').length;
+
+  const byEvt = S.eventi
+    .map(e=>{ const acc=S.acconti.filter(a=>a.eventId===e.id); return {name:e.name,count:acc.length,total:acc.reduce((s,a)=>s+(+a.amount||0),0)}; })
+    .filter(x=>x.total>0).sort((a,b)=>b.total-a.total).slice(0,7);
+  const maxEvt = Math.max(...byEvt.map(x=>x.total),1);
+
+  const byMethod = {};
+  S.acconti.filter(a=>a.paymentMethod).forEach(a => {
+    byMethod[a.paymentMethod] = (byMethod[a.paymentMethod]||0) + (+a.amount||0);
+  });
+  const methodArr = Object.entries(byMethod).map(([name,total])=>({name,total})).sort((a,b)=>b.total-a.total);
+  const maxMethod = Math.max(...methodArr.map(x=>x.total),1);
+
+  // ── build month trend ──
+  const byMonth = {};
+  S.acconti.forEach(a => {
+    if(!a.date) return;
+    const m = a.date.slice(0,7);
+    if(!byMonth[m]) byMonth[m] = {amount:0, confirmed:0};
+    byMonth[m].amount    += (+a.amount||0);
+    byMonth[m].confirmed += a.status==='confirmed'?(+a.amount||0):0;
+  });
+  const fmtMon = k => { const [y,m]=k.split('-'); return new Date(+y,+m-1,1).toLocaleDateString('it-IT',{month:'short',year:'2-digit'}); };
+  const monthArr = Object.entries(byMonth).map(([k,v])=>({key:k,label:fmtMon(k),amount:v.amount,confirmed:v.confirmed})).sort((a,b)=>a.key.localeCompare(b.key));
+  const maxMonth = Math.max(...monthArr.map(x=>x.amount),1);
+
+  // SVG sparkline for month trend
+  const spW=320, spH=72, spPad=4;
+  const sparkline = monthArr.length < 2 ? '' : (() => {
+    const pts = monthArr.map((x,i)=>{
+      const xp = spPad + (i/(monthArr.length-1))*(spW-spPad*2);
+      const yp = spH-spPad - (x.amount/maxMonth)*(spH-spPad*2);
+      return `${xp.toFixed(1)},${yp.toFixed(1)}`;
+    }).join(' ');
+    const area = `M${monthArr.map((x,i)=>{
+      const xp=spPad+(i/(monthArr.length-1))*(spW-spPad*2);
+      const yp=spH-spPad-(x.amount/maxMonth)*(spH-spPad*2);
+      return `${xp.toFixed(1)},${yp.toFixed(1)}`;
+    }).join(' L')} L${(spW-spPad).toFixed(1)},${spH} L${spPad},${spH} Z`;
+    const lastX = spPad + ((monthArr.length-1)/(monthArr.length-1))*(spW-spPad*2);
+    const lastY = spH-spPad-(monthArr[monthArr.length-1].amount/maxMonth)*(spH-spPad*2);
+    return `<svg viewBox="0 0 ${spW} ${spH}" style="width:100%;height:${spH}px;display:block;margin-bottom:10px" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#C9A84C" stop-opacity=".25"/>
+          <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#sg)"/>
+      <polyline points="${pts}" fill="none" stroke="#C9A84C" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="3" fill="#C9A84C"/>
+    </svg>`;
+  })();
+
+  const byGrp = S.gruppi
+    .map(g=>{ const acc=S.acconti.filter(a=>a.groupId===g.id); return {name:g.name,count:acc.length,total:acc.reduce((s,a)=>s+(+a.amount||0),0)}; })
+    .filter(x=>x.total>0).sort((a,b)=>b.total-a.total).slice(0,7);
+  const maxGrp = Math.max(...byGrp.map(x=>x.total),1);
+
+  const bars = (items,max,labelKey='name',valKey='total') => items.length===0
+    ? `<p class="text-dim text-sm">Nessun dato disponibile</p>`
+    : items.map(x=>`<div class="bar-row">
+        <span class="bar-label" title="${esc(x[labelKey])}">${esc(x[labelKey])}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct(x[valKey],max)}%"></div></div>
+        <span class="bar-value">${eur(x[valKey])}</span>
+      </div>`).join('');
+
+  const trendRows = monthArr.length===0
+    ? `<p class="text-dim text-sm">Nessun dato disponibile</p>`
+    : monthArr.map(x=>`<div class="bar-row">
+        <span class="bar-label">${esc(x.label)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct(x.amount,maxMonth)}%"></div></div>
+        <span class="bar-value">${eur(x.amount)}</span>
+      </div>`).join('');
+
+  return `
+    <div class="metric-grid grid-4 mb-5">
+      ${metric('ti-receipt','Totale acconti',eur(totAcc))}
+      ${metric('ti-circle-check','Confermati',eur(confAcc),totAcc>0?`${pct(confAcc,totAcc)}% del totale`:'')}
+      ${metric('ti-clock','In attesa',eur(pendAcc))}
+      ${metric('ti-x','Annullati',cancCnt+' acconti')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="card">
+        <p class="card-title">Top eventi per incasso</p>
+        ${bars(byEvt,maxEvt)}
+      </div>
+      <div class="card">
+        <p class="card-title">Top gruppi per spesa</p>
+        ${bars(byGrp,maxGrp)}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="card">
+        <p class="card-title">Trend mensile incassi</p>
+        ${sparkline}${trendRows}
+      </div>
+      <div class="card">
+        <p class="card-title">Metodi di pagamento</p>
+        ${bars(methodArr,maxMethod)}
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:18px 20px 0"><p class="card-title">Riepilogo eventi</p></div>
+      ${S.eventi.length===0 ? `<div style="padding:0 20px 18px">${empty('ti-calendar-off','Nessun evento')}</div>` :
+        `<table>
+          <thead><tr>
+            <th>Evento</th><th>Data</th><th class="hide-mobile">Venue</th><th>Capienza</th><th>N° acconti</th><th>Totale</th><th>Status</th>
+          </tr></thead>
+          <tbody>${S.eventi.sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(e=>{
+            const acc=S.acconti.filter(a=>a.eventId===e.id);
+            const tot=acc.reduce((s,a)=>s+(+a.amount||0),0);
+            return `<tr>
+              <td class="font-medium">${esc(e.name)}</td>
+              <td class="text-dim">${dat(e.date)}</td>
+              <td class="text-muted hide-mobile">${esc(e.venue||'—')}</td>
+              <td class="text-dim">${e.capacity||'—'}</td>
+              <td class="text-mono">${acc.length}</td>
+              <td class="text-mono text-gold">${eur(tot)}</td>
+              <td>${badge(e.status==='available'?'Disponibile':'Pagato',e.status==='available'?'amber':'green')}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>`}
+    </div>`;
+}
+
+/* ── ACTIONS: Gruppi ──────────────────────────────────────── */
+
+// Opens the acconto edit form for the first acconto of group+event (legacy button)
+function editGroupEvent(eventId) {
+  const acc = S.acconti.find(a => a.groupId === S.selGroup && a.eventId === eventId);
+  if(!acc) { toast('Nessun acconto trovato per questo evento','error'); return; }
+  editAcconto(acc.id);
+}
+
+// Opens the multi-event NEW acconto form pre-filled with group (and optionally event)
+function openAccFormForGroup(groupId, eventId) {
+  switchTab('acconti');          // navigates to acconti, resets form state
+  // now set after the reset
+  S.showAccForm          = true;
+  S.editAccId            = null;
+  S.accFormGroupId       = groupId;
+  S.accFormSelectedEvts  = eventId ? [eventId] : [];
+  S.accFormAmounts       = {};
+  render();
+}
+
+// Toggle acconto status from within the gruppi panel — re-renders gruppi
+function toggleAccFromGroup(id) {
+  S.acconti = S.acconti.map(a => {
+    if(a.id !== id) return a;
+    const next = {pending:'confirmed', confirmed:'pending', cancelled:'pending'}[a.status]||'pending';
+    return {...a, status: next};
+  });
+  persist('prm_acconti', S.acconti);
+  toast(S.acconti.find(a=>a.id===id)?.status==='confirmed' ? 'Acconto confermato' : 'Acconto riportato in attesa');
+  render();
+}
+
+// Delete acconto from within the gruppi panel — stays on gruppi tab
+function delAccontoFromGroup(id) {
+  if(!confirm('Eliminare questo acconto?')) return;
+  const backup = [...S.acconti];
+  S.acconti = S.acconti.filter(a => a.id !== id);
+  persist('prm_acconti', S.acconti); render();
+  deleteWithUndo('Acconto eliminato', () => backup, b => { S.acconti=b; persist('prm_acconti',S.acconti); render(); });
+}
+
+function delGroupEvent(eventId) {
+  if(!confirm('Rimuovere questa assegnazione e tutti i relativi acconti dal gruppo?')) return;
+  const backup = [...S.acconti];
+  S.acconti = S.acconti.filter(a => !(a.groupId === S.selGroup && a.eventId === eventId));
+  persist('prm_acconti', S.acconti); render();
+  deleteWithUndo('Assegnazione rimossa', () => backup, b => { S.acconti=b; persist('prm_acconti',S.acconti); });
+}
+
+function addGruppo()        { S.showGruppoForm=true; S.editGruppoId=null; S.showMemberForm=false; S.showVacForm=false; render(); setTimeout(()=>document.getElementById('gf-name')?.focus(),0); }
+function cancelGruppoForm() { S.showGruppoForm=false; S.editGruppoId=null; render(); }
+function editGruppo(id)     { S.editGruppoId=id; S.showGruppoForm=true; S.selGroup=id; render(); setTimeout(()=>document.getElementById('gf-name')?.focus(),0); }
+function selectGruppo(id)   { S.selGroup=id; S.showGruppoForm=false; S.showMemberForm=false; S.showVacForm=false; S.editGruppoId=null; render(); }
+function toggleMemberForm() { S.showMemberForm=!S.showMemberForm; render(); if(S.showMemberForm) setTimeout(()=>document.getElementById('mf-name')?.focus(),0); }
+function openVacForm()      { S.showVacForm=true; render(); setTimeout(()=>{ document.getElementById('vf-from').value=isoDate(new Date()); document.getElementById('vf-from')?.focus(); },0); }
+function closeVacForm()     { S.showVacForm=false; render(); }
+
+function saveGruppo() {
+  const name = document.getElementById('gf-name')?.value?.trim();
+  const desc = document.getElementById('gf-desc')?.value?.trim()||'';
+  if(!name){ toast('Inserisci il nome del gruppo','error'); return; }
+  if(S.editGruppoId) {
+    S.gruppi = S.gruppi.map(g=>g.id===S.editGruppoId?{...g,name,description:desc}:g);
+    toast('Gruppo aggiornato');
+  } else {
+    const ng = {id:uid(),name,description:desc,members:[],vacanze:[],ts:Date.now()};
+    S.gruppi = [...S.gruppi,ng]; S.selGroup=ng.id;
+    toast('Gruppo creato');
+  }
+  persist('prm_gruppi',S.gruppi); S.showGruppoForm=false; S.editGruppoId=null; render();
+}
+
+function delGruppo(id) {
+  if(!confirm('Eliminare il gruppo e tutti i suoi dati?')) return;
+  const backup = [...S.gruppi];
+  S.gruppi = S.gruppi.filter(g=>g.id!==id);
+  S.selGroup=null; persist('prm_gruppi',S.gruppi); render();
+  deleteWithUndo('Gruppo eliminato', () => backup, b => { S.gruppi=b; persist('prm_gruppi',S.gruppi); });
+}
+
+function addMember() {
+  const name  = document.getElementById('mf-name')?.value?.trim();
+  const phone = document.getElementById('mf-phone')?.value?.trim()||'';
+  const email = document.getElementById('mf-email')?.value?.trim()||'';
+  if(!name||!S.selGroup){ toast('Inserisci il nome del membro','error'); return; }
+  S.gruppi = S.gruppi.map(g=>{
+    if(g.id!==S.selGroup) return g;
+    return {...g,members:[...(g.members||[]),{id:uid(),name,phone,email}]};
+  });
+  persist('prm_gruppi',S.gruppi); S.showMemberForm=false; toast('Membro aggiunto'); render();
+}
+
+function delMember(mid) {
+  const backup = [...S.gruppi];
+  if(!S.selGroup) return;
+  S.gruppi = S.gruppi.map(g=>{
+    if(g.id!==S.selGroup) return g;
+    return {...g,members:(g.members||[]).filter(m=>m.id!==mid)};
+  });
+  persist('prm_gruppi',S.gruppi); render();
+  deleteWithUndo('Membro rimosso', () => backup, b => { S.gruppi=b; persist('prm_gruppi',S.gruppi); });
+}
+
+/* ── ACTIONS: Vacanze ─────────────────────────────────────── */
+function addVacanza() {
+  const from = document.getElementById('vf-from')?.value;
+  const to   = document.getElementById('vf-to')?.value;
+  const note = document.getElementById('vf-note')?.value?.trim()||'';
+  if(!from||!to){ toast('Inserisci le date di inizio e fine','error'); return; }
+  if(from>to){ toast('La data di fine deve essere dopo quella di inizio','error'); return; }
+  S.gruppi = S.gruppi.map(g=>{
+    if(g.id!==S.selGroup) return g;
+    return {...g, vacanze:[...(g.vacanze||[]),{id:uid(),from,to,note}]};
+  });
+  persist('prm_gruppi',S.gruppi); S.showVacForm=false; toast('Periodo aggiunto'); render();
+}
+
+function delVacanza(vid) {
+  const backup = [...S.gruppi];
+  if(!S.selGroup) return;
+  S.gruppi = S.gruppi.map(g=>{
+    if(g.id!==S.selGroup) return g;
+    return {...g, vacanze:(g.vacanze||[]).filter(v=>v.id!==vid)};
+  });
+  persist('prm_gruppi',S.gruppi); render();
+  deleteWithUndo('Periodo rimosso', () => backup, b => { S.gruppi=b; persist('prm_gruppi',S.gruppi); });
+}
+
+/* ── ACTIONS: Acconti ─────────────────────────────────────── */
+function openAccForm()  {
+  S.showAccForm=true; S.editAccId=null;
+  S.accFormGroupId=''; S.accFormSelectedEvts=[]; S.accFormAmounts={};
+  render();
+  setTimeout(()=>document.getElementById('af-group')?.focus(), 0);
+}
+function closeAccForm() {
+  S.showAccForm=false; S.editAccId=null;
+  S.accFormGroupId=''; S.accFormSelectedEvts=[]; S.accFormAmounts={};
+  render();
+}
+function setAccFilter(f){ S.accFilter=f; render(); }
+
+/* ── Multi-event acconto helpers ─────────────────────────── */
+function onAccGroupChange(groupId) {
+  S.accFormGroupId = groupId;
+  S.accFormSelectedEvts = [];
+  S.accFormAmounts = {};
+  render();
+}
+
+function saveAccAmounts() {
+  // flush current DOM input values → state (called before any re-render that would wipe the DOM)
+  S.accFormSelectedEvts.forEach(evtId => {
+    const amt = document.getElementById(`af-amount-${evtId}`)?.value || '';
+    const due = document.getElementById(`af-totaldue-${evtId}`)?.value || '';
+    S.accFormAmounts[evtId] = { amount: amt, totalDue: due };
+  });
+}
+
+function toggleAccEvent(evtId) {
+  saveAccAmounts(); // preserve current amounts before re-render
+  if (S.accFormSelectedEvts.includes(evtId)) {
+    S.accFormSelectedEvts = S.accFormSelectedEvts.filter(x => x !== evtId);
+  } else {
+    S.accFormSelectedEvts = [...S.accFormSelectedEvts, evtId];
+  }
+  render();
+}
+
+function editAcconto(id) {
+  const a = S.acconti.find(x=>x.id===id); if(!a) return;
+  S.editAccId=id; S.showAccForm=true;
+  S.accFormGroupId=''; S.accFormSelectedEvts=[]; S.accFormAmounts={};
+  render();
+  setTimeout(()=>{ document.getElementById('af-group')?.focus();
+    const set=(el,v)=>{ const e=document.getElementById(el); if(e) e.value=v||''; };
+    set('af-group',a.groupId); set('af-event',a.eventId||'');
+    set('af-amount',a.amount); set('af-totaldue',a.totalDue||'');
+    set('af-method',a.paymentMethod||'');
+    set('af-date',a.date||''); set('af-status',a.status||'pending'); set('af-note',a.note||'');
+  },0);
+}
+
+function saveAcconto() {
+  // ── EDIT: single event (unchanged behaviour) ──
+  if (S.editAccId) {
+    const gId          = document.getElementById('af-group')?.value;
+    const eId          = document.getElementById('af-event')?.value||'';
+    const amount       = document.getElementById('af-amount')?.value;
+    const totalDue     = document.getElementById('af-totaldue')?.value||'';
+    const paymentMethod= document.getElementById('af-method')?.value||'';
+    const date         = document.getElementById('af-date')?.value||'';
+    const status       = document.getElementById('af-status')?.value||'pending';
+    const note         = document.getElementById('af-note')?.value?.trim()||'';
+    if(!gId||!amount){ toast('Gruppo e importo sono obbligatori','error'); return; }
+    S.acconti = S.acconti.map(a=>a.id===S.editAccId?{...a,groupId:gId,eventId:eId,amount,totalDue,paymentMethod,date,status,note}:a);
+    toast('Acconto aggiornato');
+    persist('prm_acconti',S.acconti);
+    S.showAccForm=false; S.editAccId=null;
+    render();
+    return;
+  }
+
+  // ── NEW: multi-event ──
+  const gId = S.accFormGroupId;
+  if (!gId) { toast('Seleziona un gruppo','error'); return; }
+  if (S.accFormSelectedEvts.length === 0) { toast('Seleziona almeno un evento','error'); return; }
+
+  saveAccAmounts(); // flush DOM → state before reading
+
+  const paymentMethod = document.getElementById('af-method')?.value||'';
+  const date          = document.getElementById('af-date')?.value||'';
+  const status        = document.getElementById('af-status')?.value||'pending';
+  const note          = document.getElementById('af-note')?.value?.trim()||'';
+
+  let count = 0;
+  const now = Date.now();
+  S.accFormSelectedEvts.forEach((evtId, i) => {
+    const saved  = S.accFormAmounts[evtId]||{};
+    const amount = (saved.amount||'').toString().trim();
+    if (!amount || +amount <= 0) return; // skip events without amount
+    const totalDue = (saved.totalDue||'').toString().trim();
+    S.acconti.push({ id:uid(), groupId:gId, eventId:evtId, amount, totalDue, paymentMethod, date, status, note, ts: now + i });
+    count++;
+  });
+
+  if (count === 0) { toast('Inserisci almeno un importo maggiore di zero','error'); return; }
+  toast(`${count} accont${count===1?'o':'i'} salvat${count===1?'o':'i'}`);
+  persist('prm_acconti', S.acconti);
+  S.showAccForm=false; S.editAccId=null;
+  S.accFormGroupId=''; S.accFormSelectedEvts=[]; S.accFormAmounts={};
+  render();
+}
+
+function delAcconto(id) {
+  const backup = [...S.acconti];
+  S.acconti=S.acconti.filter(a=>a.id!==id);
+  persist('prm_acconti',S.acconti); render();
+  deleteWithUndo('Acconto eliminato', () => backup, b => { S.acconti=b; persist('prm_acconti',S.acconti); });
+}
+
+function duplicateAcconto(id) {
+  const a = S.acconti.find(x=>x.id===id); if(!a) return;
+  const clone = {...a, id:uid(), date: isoDate(new Date()), status: 'pending', ts:Date.now()};
+  S.acconti = [...S.acconti, clone];
+  persist('prm_acconti',S.acconti); toast('Acconto duplicato'); render();
+}
+
+function toggleAcc(id) {
+  S.acconti=S.acconti.map(a=>{
+    if(a.id!==id) return a;
+    const next={pending:'confirmed',confirmed:'pending',cancelled:'pending'}[a.status]||'pending';
+    return {...a,status:next};
+  });
+  persist('prm_acconti',S.acconti); render();
+}
+
+function exportAcconti() {
+  const rows=[['Gruppo','Evento','Data','Acconto (€)','Totale Dovuto (€)','Saldo (€)','Metodo Pagamento','Stato','Note']];
+  S.acconti.forEach(a=>{
+    const g=S.gruppi.find(x=>x.id===a.groupId);
+    const e=S.eventi.find(x=>x.id===a.eventId);
+    const saldo = (+a.totalDue||0) - (+a.amount||0);
+    rows.push([
+      g?.name||'—', e?.name||'—', a.date||'—',
+      a.amount||'0', a.totalDue||'', a.totalDue?saldo:'',
+      a.paymentMethod||'', a.status, a.note||''
+    ]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`acconti_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); toast('CSV esportato','info');
+}
+
+/* ── ACTIONS: Eventi ──────────────────────────────────────── */
+function openEvtForm()  { openEvtModal(null); }
+function closeEvtForm() { closeEvtModal(); }
+function setEvtSub(s)   { S.evtSub=s; S.selEvent=null; render(); }
+function setEvtView(v)  { S.evtView=v; S.selEvent=null; render(); }
+function setEvtPeriod(p){ S.evtPeriod=p; render(); }
+function setEvtWeekOffset(delta) { S.evtWeekOffset += delta; render(); }
+function selectEvento(id){ S.selEvent = (S.selEvent===id) ? null : id; render(); }
+function deselectEvento(){ S.selEvent=null; render(); }
+function editEvento(id) { openEvtModal(id); }
+
+function saveEvento() {
+  const name=document.getElementById('ef-name')?.value?.trim();
+  const date=document.getElementById('ef-date')?.value||'';
+  if(!name || !date){ toast('Nome e Data sono obbligatori','error'); return; }
+
+  const g = id => document.getElementById(id);
+  const gv = id => g(id)?.value?.trim()||'';
+  const gn = id => g(id)?.value||'';
+
+  const data = {
+    name, date,
+    status:      gv('ef-status') || 'available',
+    timeStart:   gv('ef-time-start'),
+    timeEnd:     gv('ef-time-end'),
+    venue:       gv('ef-venue'),
+    city:        gv('ef-city'),
+    address:     gv('ef-address'),
+    maplink:     gv('ef-maplink'),
+    price:       gn('ef-price')      || '0',
+    priceF:      gn('ef-price-f'),
+    priceM:      gn('ef-price-m'),
+    priceList:   gn('ef-price-list'),
+    priceTable:  gn('ef-price-table'),
+    currency:    gv('ef-currency')   || 'EUR',
+    capacity:    gn('ef-capacity'),
+    capacityPr:  gn('ef-capacity-pr'),
+    capacityList:gn('ef-capacity-lst'),
+    minAge:      gn('ef-minage'),
+    tag:         gv('ef-tag'),
+    dresscode:   gv('ef-dresscode'),
+    contact:     gv('ef-contact'),
+    contactPhone:gv('ef-contact-phone'),
+    eventlink:   gv('ef-eventlink'),
+    social:      gv('ef-social'),
+    notes:       gv('ef-notes'),
+    color:       gv('ef-color') || '#C9A84C',
+  };
+
+  if(S.editEvtId) {
+    S.eventi = S.eventi.map(e => e.id===S.editEvtId ? {...e,...data} : e);
+    toast('Evento aggiornato');
+    closeEvtModal();
+  } else {
+    const isRecur = g('ef-is-recurring')?.checked;
+    if(isRecur) {
+      const endD = gv('ef-recur-end');
+      const interval = gv('ef-recur-interval') || 'weekly';
+      const daysChecked = Array.from(document.querySelectorAll('input[name="ef-recur-days"]:checked')).map(cb=>parseInt(cb.value));
+      if(!endD){ toast('Inserisci la data di fine serie','error'); return; }
+      if(interval==='weekly' && daysChecked.length===0){ toast('Seleziona almeno un giorno','error'); return; }
+
+      let curr = new Date(date+'T12:00:00');
+      const end = new Date(endD+'T12:00:00');
+      if(curr>end){ toast('La data fine deve essere dopo la data inizio','error'); return; }
+      const sId = uid(); let count=0;
+
+      if(interval==='weekly') {
+        while(curr<=end){
+          if(daysChecked.includes(curr.getDay())){
+            S.eventi.push({id:uid(),...data,date:curr.toISOString().split('T')[0],seriesId:sId,status:data.status||'available',ts:Date.now()});
+            count++;
+          }
+          curr.setDate(curr.getDate()+1);
+        }
+      } else if(interval==='biweekly') {
+        while(curr<=end){
+          S.eventi.push({id:uid(),...data,date:curr.toISOString().split('T')[0],seriesId:sId,status:data.status||'available',ts:Date.now()});
+          count++; curr.setDate(curr.getDate()+14);
+        }
+      } else if(interval==='monthly') {
+        while(curr<=end){
+          S.eventi.push({id:uid(),...data,date:curr.toISOString().split('T')[0],seriesId:sId,status:data.status||'available',ts:Date.now()});
+          count++; curr.setMonth(curr.getMonth()+1);
+        }
+      }
+      if(count===0){ toast('Nessun evento generato — controlla date e giorni','error'); return; }
+      toast(`${count} eventi generati`);
+      closeEvtModal();
+    } else {
+      S.eventi.push({id:uid(),...data,ts:Date.now()});
+      toast('Evento creato');
+      closeEvtModal();
+    }
+  }
+  persist('prm_eventi',S.eventi); render();
+}
+
+function delEvento(id) {
+  const ev = S.eventi.find(e=>e.id===id);
+  if(!ev) return;
+  const backup = [...S.eventi];
+
+  if(ev.seriesId) {
+    const choice = confirm(
+      `"${ev.name}" fa parte di una serie ricorrente.\n\nOK → elimina TUTTA la serie\nAnnulla → elimina SOLO questo evento`
+    );
+    if(choice) {
+      // delete whole series
+      S.eventi = S.eventi.filter(e=>e.seriesId!==ev.seriesId);
+      persist('prm_eventi',S.eventi);
+      if(S.selEvent===id) S.selEvent=null;
+      render();
+      deleteWithUndo('Serie eliminata', () => backup, b => { S.eventi=b; persist('prm_eventi',S.eventi); });
+    } else {
+      // delete only this event (no second confirm — the first confirm already asked)
+      S.eventi = S.eventi.filter(e=>e.id!==id);
+      persist('prm_eventi',S.eventi);
+      if(S.selEvent===id) S.selEvent=null;
+      render();
+      deleteWithUndo('Evento eliminato', () => backup, b => { S.eventi=b; persist('prm_eventi',S.eventi); });
+    }
+    return;
+  }
+
+  if(!confirm(`Eliminare "${ev.name}"?`)) return;
+  S.eventi = S.eventi.filter(e=>e.id!==id);
+  persist('prm_eventi',S.eventi);
+  if(S.selEvent===id) S.selEvent=null;
+  render();
+  deleteWithUndo('Evento eliminato', () => backup, b => { S.eventi=b; persist('prm_eventi',S.eventi); });
+}
+
+function markPaid(id)  { S.eventi=S.eventi.map(e=>e.id===id?{...e,status:'paid'}:e);      persist('prm_eventi',S.eventi); toast('Evento segnato come pagato'); render(); }
+function markAvail(id) { S.eventi=S.eventi.map(e=>e.id===id?{...e,status:'available'}:e); persist('prm_eventi',S.eventi); toast('Evento riaperto'); render(); }
+
+/* ── Install Modal ────────────────────────────────────────── */
+function showInstallModal() {
+  document.getElementById('modal-root').innerHTML=`
+    <div class="overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal-box">
+        <div class="flex items-center justify-between mb-4">
+          <p class="modal-title">Installa sul Desktop</p>
+          ${btnI('ti-x','closeModal()')}
+        </div>
+        <p class="text-muted text-sm mb-4">Aggiungi PR Manager al desktop per aprirlo come un'app indipendente, senza barra del browser.</p>
+
+        <div class="form-bg mb-3">
+          <p style="font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+            <i class="ti ti-brand-chrome"></i>  Chrome — Installa come app
+          </p>
+          <ol style="font-size:12px;color:var(--text2);line-height:1.9;padding-left:18px;margin:0">
+            <li>Apri il file <strong style="color:var(--text)">PR_Manager_v11.html</strong> con Chrome</li>
+            <li>Clicca i tre puntini <strong style="color:var(--text)">⋮</strong> in alto a destra</li>
+            <li>Vai su <strong style="color:var(--text)">Salva e condividi → Installa come app</strong></li>
+            <li>Conferma: l'icona apparirà sul Desktop e nel menu Start</li>
+          </ol>
+        </div>
+
+        <div class="form-bg mb-3">
+          <p style="font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+            <i class="ti ti-brand-windows"></i>  Windows — Collegamento veloce
+          </p>
+          <ol style="font-size:12px;color:var(--text2);line-height:1.9;padding-left:18px;margin:0">
+            <li>Tasto destro sul file <strong style="color:var(--text)">PR_Manager_v11.html</strong></li>
+            <li>Seleziona <strong style="color:var(--text)">Invia a → Desktop (crea collegamento)</strong></li>
+            <li>Doppio click sull'icona sul desktop per aprirlo</li>
+          </ol>
+        </div>
+
+        <div class="form-bg" style="margin-bottom:18px">
+          <p style="font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+            <i class="ti ti-apple"></i>  macOS — Dock rapido
+          </p>
+          <ol style="font-size:12px;color:var(--text2);line-height:1.9;padding-left:18px;margin:0">
+            <li>Apri il file con Chrome o Safari</li>
+            <li>In Chrome: <strong style="color:var(--text)">⋮ → Installa come app</strong></li>
+            <li>In Safari: <strong style="color:var(--text)">File → Aggiungi al Dock</strong></li>
+          </ol>
+        </div>
+
+        <div class="form-bg mb-4" style="border-color:rgba(201,168,76,0.2);background:rgba(201,168,76,0.04)">
+          <p style="font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+            <i class="ti ti-database-export"></i>  Backup dei dati
+          </p>
+          <p style="font-size:12px;color:var(--text2);line-height:1.7;margin:0">
+            Usa i pulsanti <strong style="color:var(--text)">Backup</strong> e <strong style="color:var(--text)">Importa</strong> in alto a destra per esportare e ripristinare tutti i tuoi dati in formato JSON. Conserva il file in un posto sicuro.
+          </p>
+        </div>
+
+        <div class="flex justify-end">
+          ${btn('Capito!','closeModal()','btn-primary')}
+        </div>
+      </div>
+    </div>`;
+}
+function closeModal() { document.getElementById('modal-root').innerHTML=''; }
+
+/* ── PWA Manifest ─────────────────────────────────────────── */
+function injectManifest() {
+  try {
+    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#08080F"/><circle cx="256" cy="210" r="86" fill="none" stroke="#C9A84C" stroke-width="28"/><path d="M160 360 Q256 440 352 360" fill="none" stroke="#C9A84C" stroke-width="28" stroke-linecap="round"/><circle cx="256" cy="210" r="22" fill="#C9A84C"/></svg>`;
+    const b64 = btoa(svgIcon);
+    const manifest = {name:"PR Manager",short_name:"PR",description:"Gestionale eventi, gruppi e acconti",start_url:".",display:"standalone",background_color:"#08080F",theme_color:"#08080F",icons:[{src:`data:image/svg+xml;base64,${b64}`,sizes:"512x512",type:"image/svg+xml"}]};
+    const blob = new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+    const link = document.createElement('link');
+    link.rel='manifest'; link.href=URL.createObjectURL(blob);
+    document.head.appendChild(link);
+  } catch(e){}
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   PACCHETTI  –  Evento + Alloggio + Transfer
+   ══════════════════════════════════════════════════════════ */
+
+const PKG_STAY  = ['Nessuno','Appartamento','Hotel','B&B','Villa','Resort','Hostel','Altro'];
+const PKG_TRANS = ['Nessuno','NCC Privato','Minibus','Taxi','Bus Navetta','Barca/Yacht','Altro'];
+
+function pkgBadge(s) {
+  const m = { disponibile:['Disponibile','green'], esaurito:['Esaurito','red'], archivio:['Archivio','neutral'] };
+  const [t,c] = m[s]||['—','neutral']; return badge(t,c);
+}
+
+function renderPacchetti() {
+  const allPkg = S.pacchetti;
+  const filt   = S.pkgSub === 'all' ? allPkg : allPkg.filter(p => p.status === S.pkgSub);
+
+  /* ── Sidebar ── */
+  const sideItems = filt.length === 0
+    ? `<p class="text-dim text-sm">Nessun pacchetto</p>`
+    : filt.map(p => {
+        const ev = S.eventi.find(e => e.id === p.eventId);
+        const nPren = S.prenotazioniPkg.filter(r => r.pacchettoId === p.id).length;
+        return `<div class="pkg-item${S.selPacchetto===p.id?' pkg-sel':''}" onclick="selPkg('${p.id}')">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-medium" style="font-size:13px">${esc(p.nome)}</span>
+            ${pkgBadge(p.status||'disponibile')}
+          </div>
+          <p class="text-dim text-sm">${ev?esc(ev.name):'—'}</p>
+          <div class="flex items-center justify-between mt-1">
+            <span class="text-gold text-mono" style="font-size:12px">${eur(p.prezzoBase)}/pers.</span>
+            <span class="text-dim text-sm">${nPren} pren.</span>
+          </div>
+        </div>`;
+      }).join('');
+
+  const sidebar = `<div class="card" style="padding:14px">
+    <div class="flex items-center justify-between mb-3">
+      <p style="font-weight:500;font-size:13px">Pacchetti (${allPkg.length})</p>
+      ${btn('Nuovo','addPacchetto()','btn-primary','ti-plus')}
+    </div>
+    <div class="filter-bar mb-3">
+      ${[['all','Tutti'],['disponibile','Disponibili'],['esaurito','Esauriti'],['archivio','Archivio']].map(([v,l])=>
+        `<button class="filter-pill${S.pkgSub===v?' active':''}" onclick="S.pkgSub='${v}';render()" style="font-size:11px;padding:3px 9px">${l}</button>`).join('')}
+    </div>
+    ${sideItems}
+  </div>`;
+
+  /* ── Detail / Form ── */
+  let detail = '';
+
+  if (S.showPkgForm) {
+    const p = S.editPkgId ? (allPkg.find(x => x.id === S.editPkgId)||{}) : {};
+    const evOpts   = S.eventi.map(e => `<option value="${e.id}"${p.eventId===e.id?' selected':''}>${esc(e.name)} — ${dat(e.date)}</option>`).join('');
+    const stayOpts = PKG_STAY.map(s  => `<option value="${s}"${(p.stay||'Nessuno')===s?' selected':''}>${s}</option>`).join('');
+    const trOpts   = PKG_TRANS.map(s => `<option value="${s}"${(p.transport||'Nessuno')===s?' selected':''}>${s}</option>`).join('');
+    const stOpts   = ['disponibile','esaurito','archivio'].map(s =>
+      `<option value="${s}"${(p.status||'disponibile')===s?' selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('');
+
+    detail = `<div class="card">
+      <div class="flex items-center justify-between mb-4">
+        <p class="card-title" style="margin:0">${S.editPkgId?'Modifica pacchetto':'Nuovo pacchetto'}</p>
+        ${btnI('ti-x','closePkgForm()')}
+      </div>
+
+      <div class="section-block">
+        <p class="section-title"><i class="ti ti-info-circle"></i>Info base</p>
+        <div class="grid-3" style="gap:12px;margin-bottom:0">
+          ${frow('Nome pacchetto *',`<input id="pf-nome" class="field w-full" placeholder="es. Weekend VIP Ibiza" value="${esc(p.nome||'')}">`) }
+          ${frow('Evento collegato',`<select id="pf-event" class="field w-full"><option value="">— nessuno —</option>${evOpts}</select>`)}
+          ${frow('Stato',`<select id="pf-status" class="field w-full">${stOpts}</select>`)}
+          ${frow('Prezzo base (€/persona) *',`<input type="number" id="pf-price" class="field w-full" placeholder="0.00" min="0" step="0.01" value="${esc(p.prezzoBase||'')}">`)}
+          ${frow('Pax minimi',`<input type="number" id="pf-pax-min" class="field w-full" placeholder="1" min="1" value="${esc(p.paxMin||'')}">`)}
+          ${frow('Pax massimi',`<input type="number" id="pf-pax-max" class="field w-full" placeholder="—" min="1" value="${esc(p.paxMax||'')}">`)}
+        </div>
+      </div>
+
+      <div class="section-block">
+        <p class="section-title"><i class="ti ti-building"></i>Alloggio incluso</p>
+        <div class="grid-3" style="gap:12px">
+          ${frow('Tipo',`<select id="pf-stay" class="field w-full">${stayOpts}</select>`)}
+          ${frow('Nome struttura',`<input id="pf-stay-name" class="field w-full" placeholder="es. Hotel Belvedere" value="${esc(p.stayName||'')}">`)}
+          ${frow('N° notti',`<input type="number" id="pf-notti" class="field w-full" placeholder="1" min="0" value="${esc(p.notti||'')}">`)}
+          ${frow('Prezzo alloggio (€)',`<input type="number" id="pf-stay-price" class="field w-full" placeholder="0" min="0" step="0.01" value="${esc(p.stayPrice||'')}">`)}
+          ${frow('Check-in',`<input type="date" id="pf-checkin" class="field w-full" value="${esc(p.checkin||'')}">`)}
+          ${frow('Check-out',`<input type="date" id="pf-checkout" class="field w-full" value="${esc(p.checkout||'')}">`)}
+        </div>
+      </div>
+
+      <div class="section-block">
+        <p class="section-title"><i class="ti ti-car"></i>Transfer incluso</p>
+        <div class="grid-3" style="gap:12px">
+          ${frow('Tipo transfer',`<select id="pf-trans" class="field w-full">${trOpts}</select>`)}
+          ${frow('Partenza (da)',`<input id="pf-trans-from" class="field w-full" placeholder="es. Milano Centrale" value="${esc(p.transFrom||'')}">`)}
+          ${frow('Destinazione (a)',`<input id="pf-trans-to" class="field w-full" placeholder="es. Club Amnesia" value="${esc(p.transTo||'')}">`)}
+          ${frow('Orario pickup',`<input type="time" id="pf-trans-time" class="field w-full" value="${esc(p.transTime||'')}">`)}
+          ${frow('Prezzo transfer (€/pers.)',`<input type="number" id="pf-trans-price" class="field w-full" placeholder="0" min="0" step="0.01" value="${esc(p.transPrice||'')}">`)}
+          ${frow('Posti transfer',`<input type="number" id="pf-trans-seats" class="field w-full" placeholder="—" min="0" value="${esc(p.transSeats||'')}">`)}
+        </div>
+      </div>
+
+      ${frow('Incluso / Note',`<textarea id="pf-notes" class="field w-full" rows="2" placeholder="es. Ingresso VIP, bottiglia inclusa, transfer A/R...">${esc(p.notes||'')}</textarea>`)}
+
+      <div class="flex gap-2 mt-4">
+        ${btn('Salva pacchetto','savePacchetto()','btn-primary','ti-check')}
+        ${btn('Annulla','closePkgForm()','btn-ghost')}
+      </div>
+    </div>`;
+
+  } else if (S.selPacchetto) {
+    const p    = allPkg.find(x => x.id === S.selPacchetto);
+    if (p) {
+      const ev   = S.eventi.find(e => e.id === p.eventId);
+      const pren = S.prenotazioniPkg.filter(r => r.pacchettoId === p.id);
+      const totPax  = pren.reduce((s,r) => s+(+r.persone||0), 0);
+      const totAcc  = pren.reduce((s,r) => s+(+r.acconto||0), 0);
+      const totConf = pren.filter(r=>r.status==='confirmed').reduce((s,r) => s+(+r.acconto||0),0);
+      const totSaldo= pren.reduce((s,r)=>s+((+r.totale||0)-(+r.acconto||0)),0);
+      const gOpts   = S.gruppi.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+
+      const prenForm = S.showPrenForm ? `<div class="form-bg mb-3">
+        <p style="font-weight:500;font-size:13px;margin-bottom:12px">${S.editPrenId?'Modifica prenotazione':'Nuova prenotazione'}</p>
+        <div class="grid-4 mb-3">
+          ${frow('Gruppo *',`<select id="prf-g" class="field w-full"><option value="">Seleziona...</option>${gOpts}</select>`)}
+          ${frow('N° persone *',`<input type="number" id="prf-pax" class="field w-full" placeholder="1" min="1">`)}
+          ${frow('Acconto versato (€)',`<input type="number" id="prf-acc" class="field w-full" placeholder="0.00" min="0" step="0.01">`)}
+          ${frow('Totale dovuto (€)',`<input type="number" id="prf-tot" class="field w-full" placeholder="0.00" min="0" step="0.01">`)}
+          ${frow('Data prenotazione',`<input type="date" id="prf-data" class="field w-full" value="${isoDate(new Date())}">`)}
+          ${frow('Stato',`<select id="prf-st" class="field w-full"><option value="pending">In attesa</option><option value="confirmed">Confermato</option><option value="cancelled">Annullato</option></select>`)}
+        </div>
+        ${frow('Note',`<input id="prf-note" class="field w-full" placeholder="Note...">`)}
+        <div class="flex gap-2 mt-3">
+          ${btn('Salva','savePren()','btn-primary','ti-check')}
+          ${btn('Annulla','S.showPrenForm=false;S.editPrenId=null;render()','btn-ghost')}
+        </div>
+      </div>` : '';
+
+      const prenRows = pren.length === 0
+        ? `<p class="text-dim text-sm" style="padding:6px 0">Nessuna prenotazione ancora.</p>`
+        : pren.map(r => {
+            const g = S.gruppi.find(x => x.id === r.groupId);
+            const saldo = Math.max(0, (+r.totale||0) - (+r.acconto||0));
+            return `<div class="pren-row">
+              <div class="flex items-center gap-2">
+                ${avatar(g?.name||'?')}
+                <div>
+                  <p class="font-medium" style="font-size:13px">${esc(g?.name||'Gruppo eliminato')}</p>
+                  <p class="text-dim text-sm">${r.persone||'?'} pax · ${dat(r.data)}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <div style="text-align:right">
+                  <p class="text-mono text-gold font-medium" style="font-size:13px">${eur(r.acconto)}</p>
+                  ${r.totale ? `<p class="text-dim text-sm">su ${eur(r.totale)}${saldo>0?' · <span class="text-danger">-'+eur(saldo)+'</span>':' <span class="text-success">✓</span>'}</p>` : ''}
+                </div>
+                ${accBadge(r.status)}
+                ${btnI('ti-edit',`editPren('${r.id}')`,false,'Modifica')}
+                ${btnI('ti-trash',`delPren('${r.id}')`,true,'Elimina')}
+              </div>
+            </div>`;
+          }).join('');
+
+      detail = `<div class="card">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-head" style="font-size:19px;font-weight:600">${esc(p.nome)}</h2>
+          <div class="flex gap-2">
+            ${pkgBadge(p.status||'disponibile')}
+            ${btn('Modifica',`editPacchetto('${p.id}')`, 'btn-secondary')}
+            ${btnI('ti-trash',`delPacchetto('${p.id}')`,true,'Elimina pacchetto')}
+          </div>
+        </div>
+        ${ev ? `<p class="text-muted text-sm mb-3"><i class="ti ti-calendar-event" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>${esc(ev.name)} · ${dat(ev.date)}${ev.venue?' · '+esc(ev.venue):''}</p>` : ''}
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px">
+          <div class="stat-chip"><div class="sc-val text-gold">${eur(p.prezzoBase)}</div><div class="sc-lbl">€ / persona</div></div>
+          <div class="stat-chip"><div class="sc-val">${pren.length}</div><div class="sc-lbl">Prenotazioni</div></div>
+          <div class="stat-chip"><div class="sc-val">${totPax}</div><div class="sc-lbl">Persone tot.</div></div>
+          <div class="stat-chip"><div class="sc-val text-gold">${eur(totAcc)}</div><div class="sc-lbl">Acconti</div></div>
+          <div class="stat-chip"><div class="sc-val ${totSaldo>0?'text-danger':'text-success'}">${eur(totSaldo)}</div><div class="sc-lbl">Saldo residuo</div></div>
+        </div>
+
+        ${divider()}
+
+        <div class="grid-2" style="gap:10px;margin-bottom:14px">
+          <div class="pkg-block">
+            <div class="pkg-block-title"><i class="ti ti-building" style="font-size:11px"></i>Alloggio</div>
+            ${p.stay && p.stay !== 'Nessuno'
+              ? `<p class="font-medium text-sm">${esc(p.stayName||p.stay)}</p>
+                 <p class="text-dim text-sm">${p.notti?p.notti+' nott'+(+p.notti===1?'e':'i'):''} ${p.checkin&&p.checkout?dat(p.checkin)+' → '+dat(p.checkout):''}</p>
+                 ${p.stayPrice?`<p class="text-mono text-gold" style="font-size:12px;margin-top:4px">${eur(p.stayPrice)}</p>`:''}`
+              : `<p class="text-dim text-sm">Non incluso</p>`}
+          </div>
+          <div class="pkg-block">
+            <div class="pkg-block-title"><i class="ti ti-car" style="font-size:11px"></i>Transfer</div>
+            ${p.transport && p.transport !== 'Nessuno'
+              ? `<p class="font-medium text-sm">${esc(p.transport)}</p>
+                 <p class="text-dim text-sm">${p.transFrom?esc(p.transFrom):''}${p.transFrom&&p.transTo?' → ':''}${p.transTo?esc(p.transTo):''}</p>
+                 <p class="text-dim text-sm">${p.transTime?'Pickup: '+p.transTime:''}${p.transSeats?' · '+p.transSeats+' posti':''}</p>
+                 ${p.transPrice?`<p class="text-mono text-gold" style="font-size:12px;margin-top:4px">${eur(p.transPrice)}/pers.</p>`:''}`
+              : `<p class="text-dim text-sm">Non incluso</p>`}
+          </div>
+        </div>
+
+        ${p.notes ? `<div class="form-bg mb-4"><p class="text-sm text-muted"><i class="ti ti-info-circle" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>${esc(p.notes)}</p></div>` : ''}
+
+        ${divider()}
+
+        <div class="flex items-center justify-between mb-3">
+          <p style="font-weight:500;font-size:14px"><i class="ti ti-users" style="font-size:14px;vertical-align:-2px;margin-right:5px;color:var(--gold)"></i>Prenotazioni (${pren.length})</p>
+          ${btn('+ Prenotazione','openPrenForm()','btn-secondary','ti-plus')}
+        </div>
+        ${prenForm}${prenRows}
+      </div>`;
+    }
+  } else {
+    detail = `<div class="card">${empty('ti-package','Seleziona un pacchetto dalla lista o creane uno nuovo')}</div>`;
+  }
+
+  return `<div style="display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:start">${sidebar}<div>${detail}</div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LISTE OSPITI  –  Guest list per evento con check-in
+   ══════════════════════════════════════════════════════════ */
+
+function renderListe() {
+  const evList = [...S.eventi].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const selEv  = S.listeEventId ? S.eventi.find(e => e.id === S.listeEventId) : null;
+  const ospiti = selEv ? (selEv.ospiti||[]) : [];
+
+  const q = (S.listeSearch||'').toLowerCase();
+  const ospFilt = q
+    ? ospiti.filter(o => (o.nome+' '+(o.cognome||'')+(o.note||'')).toLowerCase().includes(q))
+    : ospiti;
+
+  const cntAll  = ospiti.length;
+  const cntEnt  = ospiti.filter(o => o.status==='entrato').length;
+  const cntNS   = ospiti.filter(o => o.status==='no-show').length;
+  const cntAtt  = ospiti.filter(o => o.status==='attesa' || !o.status).length;
+  const cntVip  = ospiti.filter(o => o.isVip).length;
+  const fillPct = cntAll ? Math.round(cntEnt/cntAll*100) : 0;
+
+  function ospBadge(s) {
+    const m = {entrato:['Entrato','green'],attesa:['Attesa','amber'],'no-show':['No-Show','red']};
+    const [t,c] = m[s||'attesa']||['Attesa','amber']; return badge(t,c);
+  }
+
+  /* ── Sidebar: event list ── */
+  const sidebar = `<div class="card" style="padding:14px">
+    <p style="font-weight:500;font-size:13px;margin-bottom:10px">Seleziona evento</p>
+    ${evList.length===0 ? `<p class="text-dim text-sm">Nessun evento creato.</p><div style="margin-top:8px">${btn('Vai a Eventi','switchTab(\'eventi\')','btn-ghost','ti-arrow-right')}</div>` :
+      evList.map(e => {
+        const cnt  = (e.ospiti||[]).length;
+        const entr = (e.ospiti||[]).filter(o=>o.status==='entrato').length;
+        return `<button class="evt-pill${S.listeEventId===e.id?' ev-active':''}" onclick="selectListeEvt('${e.id}')">
+          <div class="flex items-center justify-between">
+            <span class="font-medium" style="font-size:13px">${esc(e.name)}</span>
+            ${cnt>0 ? `<span class="badge badge-neutral" style="font-size:10px">${entr}/${cnt}</span>` : ''}
+          </div>
+          <p class="text-dim text-sm" style="margin-top:2px">${dat(e.date)}${e.venue?' · '+esc(e.venue):''}</p>
+        </button>`;
+      }).join('')}
+  </div>`;
+
+  /* ── Right panel ── */
+  let panel = '';
+  if (!selEv) {
+    panel = `<div class="card">${empty('ti-list-check','Seleziona un evento per gestire la lista ospiti')}</div>`;
+  } else {
+    const gOpts = S.gruppi.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+
+    const ospiteForm = S.showOspiteForm ? `<div class="form-bg mb-4">
+      <p style="font-weight:500;font-size:13px;margin-bottom:12px">Aggiungi ospite</p>
+      <div class="grid-4 mb-3">
+        ${frow('Nome *',`<input id="of-nome" class="field w-full" placeholder="Nome">`)}
+        ${frow('Cognome',`<input id="of-cogn" class="field w-full" placeholder="Cognome">`)}
+        ${frow('Telefono',`<input id="of-tel" class="field w-full" placeholder="+39...">`)}
+        ${frow('Gruppo (opz.)',`<select id="of-group" class="field w-full"><option value="">— nessuno —</option>${gOpts}</select>`)}
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="of-vip" style="accent-color:var(--gold)">
+          <i class="ti ti-crown" style="color:var(--gold);font-size:13px"></i> VIP
+        </label>
+      </div>
+      ${frow('Note',`<input id="of-note" class="field w-full" placeholder="Note...">`)}
+      <div class="flex gap-2 mt-3">
+        ${btn('Aggiungi','addOspite()','btn-primary','ti-user-plus')}
+        ${btn('Annulla','S.showOspiteForm=false;render()','btn-ghost')}
+        ${S.gruppi.length>0 ? btn('Importa da gruppo','importFromGroup()','btn-ghost','ti-users') : ''}
+      </div>
+    </div>` : '';
+
+    const listHeader = cntAll > 0 ? `
+      <div style="display:grid;grid-template-columns:1fr 80px 80px auto;gap:10px;padding:7px 12px;background:var(--bg2);border-bottom:1px solid var(--border);border-radius:var(--r-md) var(--r-md) 0 0">
+        <span class="field-label" style="margin:0">Ospite</span>
+        <span class="field-label" style="margin:0">Gruppo</span>
+        <span class="field-label" style="margin:0">Stato</span>
+        <span></span>
+      </div>` : '';
+
+    const ospRows = ospFilt.length === 0
+      ? (cntAll === 0
+          ? empty('ti-user-off','Lista vuota — aggiungi il primo ospite')
+          : empty('ti-search','Nessun ospite corrisponde alla ricerca'))
+      : ospFilt.map(o => {
+          const g       = S.gruppi.find(x => x.id === o.groupId);
+          const isEntr  = o.status === 'entrato';
+          const isNS    = o.status === 'no-show';
+          return `<div class="ospite-row st-${o.status||'attesa'}">
+            <div class="flex items-center gap-2">
+              ${o.isVip ? `<i class="ti ti-crown" style="font-size:13px;color:var(--gold);flex-shrink:0"></i>` : ''}
+              <div>
+                <p class="font-medium" style="font-size:13px">${esc(o.nome+(o.cognome?' '+o.cognome:''))}</p>
+                ${o.tel ? `<p class="text-dim text-sm">${esc(o.tel)}</p>` : ''}
+                ${o.orarioIngresso ? `<p style="font-size:11px;color:var(--success)">Entrato ${o.orarioIngresso}</p>` : ''}
+                ${o.note ? `<p class="text-dim text-sm">${esc(o.note)}</p>` : ''}
+              </div>
+            </div>
+            <span class="text-dim text-sm">${g ? esc(g.name) : '—'}</span>
+            <div>${ospBadge(o.status)}</div>
+            <div class="flex gap-1">
+              ${!isEntr ? `<button class="checkin-btn" onclick="checkInOspite('${selEv.id}','${o.id}')"><i class="ti ti-login" style="font-size:12px"></i>Check-in</button>` : ''}
+              ${!isNS && !isEntr ? `${btnI('ti-user-off',`noShowOspite('${selEv.id}','${o.id}')`,false,'No-show')}` : ''}
+              ${isEntr || isNS ? `${btnI('ti-rotate-clockwise',`resetOspite('${selEv.id}','${o.id}')`,false,'Riporta in attesa')}` : ''}
+              ${btnI('ti-trash',`delOspite('${selEv.id}','${o.id}')`,true,'Rimuovi')}
+            </div>
+          </div>`;
+        }).join('');
+
+    panel = `<div class="card">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="text-head" style="font-size:18px;font-weight:600">${esc(selEv.name)}</h2>
+          <p class="text-dim text-sm mt-1">${dat(selEv.date)}${selEv.venue?' · '+esc(selEv.venue):''}</p>
+        </div>
+        <div class="flex gap-2">
+          ${btn(S.showOspiteForm?'Chiudi':'+ Ospite','S.showOspiteForm=!S.showOspiteForm;render()',S.showOspiteForm?'btn-ghost':'btn-primary','ti-user-plus')}
+          ${cntAll>0 ? btn('Esporta CSV','exportLista()','btn-ghost','ti-download') : ''}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">
+        <div class="stat-chip"><div class="sc-val">${cntAll}</div><div class="sc-lbl">In lista</div></div>
+        <div class="stat-chip"><div class="sc-val" style="color:var(--warn)">${cntAtt}</div><div class="sc-lbl">Attesa</div></div>
+        <div class="stat-chip"><div class="sc-val" style="color:var(--success)">${cntEnt}</div><div class="sc-lbl">Entrati</div></div>
+        <div class="stat-chip"><div class="sc-val" style="color:var(--danger)">${cntNS}</div><div class="sc-lbl">No-show</div></div>
+        <div class="stat-chip"><div class="sc-val" style="color:var(--gold)">${cntVip}</div><div class="sc-lbl">VIP</div></div>
+      </div>
+
+      ${cntAll > 0 ? `<div class="fill-bar mb-3"><div class="fill-bar-inner" style="width:${fillPct}%;background:var(--success)"></div></div>` : ''}
+
+      ${ospiteForm}
+
+      ${cntAll > 4 ? `<div class="search-wrap mb-3"><i class="ti ti-search search-ico"></i>
+        <input class="field w-full" placeholder="Cerca ospite..." value="${esc(S.listeSearch)}" oninput="S.listeSearch=this.value;render()">
+      </div>` : ''}
+
+      ${cntAll > 0 ? `<div style="border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden">${listHeader}${ospRows}</div>` : ospRows}
+    </div>`;
+  }
+
+  return `<div style="display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:start">${sidebar}<div>${panel}</div></div>`;
+}
+
+/* ── Actions: Pacchetti ───────────────────────────────────── */
+function addPacchetto()    { S.showPkgForm=true; S.editPkgId=null; S.selPacchetto=null; S.showPrenForm=false; render(); setTimeout(()=>document.getElementById('pf-nome')?.focus(),50); }
+function editPacchetto(id) { S.showPkgForm=true; S.editPkgId=id; S.selPacchetto=id; S.showPrenForm=false; render(); setTimeout(()=>document.getElementById('pf-nome')?.focus(),50); }
+function closePkgForm()    { S.showPkgForm=false; S.editPkgId=null; render(); }
+function selPkg(id)        { S.selPacchetto = (S.selPacchetto===id?null:id); S.showPkgForm=false; S.showPrenForm=false; render(); }
+
+function savePacchetto() {
+  const nome = document.getElementById('pf-nome')?.value?.trim();
+  if(!nome) { toast('Inserisci il nome del pacchetto','error'); return; }
+  const g = id => document.getElementById(id);
+  const data = {
+    nome,
+    status:     g('pf-status')?.value  || 'disponibile',
+    eventId:    g('pf-event')?.value   || '',
+    prezzoBase: g('pf-price')?.value   || '0',
+    paxMin:     g('pf-pax-min')?.value || '',
+    paxMax:     g('pf-pax-max')?.value || '',
+    stay:       g('pf-stay')?.value    || 'Nessuno',
+    stayName:   g('pf-stay-name')?.value?.trim() || '',
+    notti:      g('pf-notti')?.value   || '',
+    stayPrice:  g('pf-stay-price')?.value || '',
+    checkin:    g('pf-checkin')?.value || '',
+    checkout:   g('pf-checkout')?.value || '',
+    transport:  g('pf-trans')?.value   || 'Nessuno',
+    transFrom:  g('pf-trans-from')?.value?.trim() || '',
+    transTo:    g('pf-trans-to')?.value?.trim()   || '',
+    transTime:  g('pf-trans-time')?.value  || '',
+    transPrice: g('pf-trans-price')?.value || '',
+    transSeats: g('pf-trans-seats')?.value || '',
+    notes:      g('pf-notes')?.value?.trim() || '',
+  };
+  if (S.editPkgId) {
+    S.pacchetti = S.pacchetti.map(p => p.id===S.editPkgId ? {...p,...data} : p);
+    toast('Pacchetto aggiornato');
+    S.selPacchetto = S.editPkgId;
+  } else {
+    const np = { id:uid(), ...data, ts:Date.now() };
+    S.pacchetti = [...S.pacchetti, np];
+    S.selPacchetto = np.id;
+    toast('Pacchetto creato');
+  }
+  persist('prm_pacchetti', S.pacchetti);
+  S.showPkgForm=false; S.editPkgId=null; render();
+}
+
+function delPacchetto(id) {
+  if(!confirm('Eliminare questo pacchetto e tutte le sue prenotazioni?')) return;
+  const bkP=[...S.pacchetti], bkR=[...S.prenotazioniPkg];
+  S.pacchetti = S.pacchetti.filter(p => p.id!==id);
+  S.prenotazioniPkg = S.prenotazioniPkg.filter(r => r.pacchettoId!==id);
+  S.selPacchetto=null; S.showPkgForm=false;
+  persist('prm_pacchetti',S.pacchetti); persist('prm_prenp',S.prenotazioniPkg); render();
+  deleteWithUndo('Pacchetto eliminato',()=>({p:bkP,r:bkR}),b=>{S.pacchetti=b.p;S.prenotazioniPkg=b.r;persist('prm_pacchetti',S.pacchetti);persist('prm_prenp',S.prenotazioniPkg);});
+}
+
+function openPrenForm()  { S.showPrenForm=true; S.editPrenId=null; render(); setTimeout(()=>document.getElementById('prf-g')?.focus(),50); }
+
+function editPren(id) {
+  const r = S.prenotazioniPkg.find(x=>x.id===id); if(!r) return;
+  S.showPrenForm=true; S.editPrenId=id; render();
+  setTimeout(()=>{
+    const set=(el,v)=>{const e=document.getElementById(el);if(e)e.value=v||'';};
+    set('prf-g',r.groupId); set('prf-pax',r.persone); set('prf-acc',r.acconto);
+    set('prf-tot',r.totale||''); set('prf-data',r.data||isoDate(new Date())); set('prf-st',r.status||'pending'); set('prf-note',r.note||'');
+  }, 50);
+}
+
+function savePren() {
+  const gId = document.getElementById('prf-g')?.value;
+  const pax  = document.getElementById('prf-pax')?.value;
+  if(!gId||!pax) { toast('Gruppo e numero persone sono obbligatori','error'); return; }
+  const data = {
+    groupId:gId, persone:pax, pacchettoId:S.selPacchetto,
+    acconto:  document.getElementById('prf-acc')?.value  || '0',
+    totale:   document.getElementById('prf-tot')?.value  || '',
+    data:     document.getElementById('prf-data')?.value || '',
+    status:   document.getElementById('prf-st')?.value   || 'pending',
+    note:     document.getElementById('prf-note')?.value?.trim() || '',
+  };
+  if (S.editPrenId) {
+    S.prenotazioniPkg = S.prenotazioniPkg.map(r => r.id===S.editPrenId ? {...r,...data} : r);
+    toast('Prenotazione aggiornata');
+  } else {
+    S.prenotazioniPkg = [...S.prenotazioniPkg, {id:uid(),...data,ts:Date.now()}];
+    toast('Prenotazione aggiunta');
+  }
+  persist('prm_prenp',S.prenotazioniPkg);
+  S.showPrenForm=false; S.editPrenId=null; render();
+}
+
+function delPren(id) {
+  const bk = [...S.prenotazioniPkg];
+  S.prenotazioniPkg = S.prenotazioniPkg.filter(r => r.id!==id);
+  persist('prm_prenp',S.prenotazioniPkg); render();
+  deleteWithUndo('Prenotazione eliminata',()=>bk,b=>{S.prenotazioniPkg=b;persist('prm_prenp',S.prenotazioniPkg);});
+}
+
+/* ── Actions: Liste Ospiti ────────────────────────────────── */
+function selectListeEvt(id) { S.listeEventId=id; S.listeSearch=''; S.showOspiteForm=false; render(); }
+
+function addOspite() {
+  const nome = document.getElementById('of-nome')?.value?.trim();
+  if(!nome || !S.listeEventId) { toast('Inserisci almeno il nome','error'); return; }
+  const ospite = {
+    id: uid(), nome,
+    cognome:  document.getElementById('of-cogn')?.value?.trim()  || '',
+    tel:      document.getElementById('of-tel')?.value?.trim()   || '',
+    groupId:  document.getElementById('of-group')?.value         || '',
+    isVip:    document.getElementById('of-vip')?.checked         || false,
+    note:     document.getElementById('of-note')?.value?.trim()  || '',
+    status:   'attesa', ts: Date.now(),
+  };
+  S.eventi = S.eventi.map(e => e.id!==S.listeEventId ? e : {...e, ospiti:[...(e.ospiti||[]),ospite]});
+  persist('prm_eventi',S.eventi); S.showOspiteForm=false; toast('Ospite aggiunto'); render();
+}
+
+function delOspite(evtId, ospId) {
+  const bk = [...S.eventi];
+  S.eventi = S.eventi.map(e => e.id!==evtId ? e : {...e, ospiti:(e.ospiti||[]).filter(o=>o.id!==ospId)});
+  persist('prm_eventi',S.eventi); render();
+  deleteWithUndo('Ospite rimosso',()=>bk,b=>{S.eventi=b;persist('prm_eventi',S.eventi);});
+}
+
+function checkInOspite(evtId, ospId) {
+  const now = new Date();
+  const hm  = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  S.eventi = S.eventi.map(e => e.id!==evtId ? e : {
+    ...e, ospiti:(e.ospiti||[]).map(o => o.id!==ospId ? o : {...o,status:'entrato',orarioIngresso:hm})
+  });
+  persist('prm_eventi',S.eventi); toast('✓ Check-in effettuato alle '+hm); render();
+}
+
+function noShowOspite(evtId, ospId) {
+  S.eventi = S.eventi.map(e => e.id!==evtId ? e : {
+    ...e, ospiti:(e.ospiti||[]).map(o => o.id!==ospId ? o : {...o,status:'no-show',orarioIngresso:''})
+  });
+  persist('prm_eventi',S.eventi); render();
+}
+
+function resetOspite(evtId, ospId) {
+  S.eventi = S.eventi.map(e => e.id!==evtId ? e : {
+    ...e, ospiti:(e.ospiti||[]).map(o => o.id!==ospId ? o : {...o,status:'attesa',orarioIngresso:''})
+  });
+  persist('prm_eventi',S.eventi); render();
+}
+
+function importFromGroup() {
+  if(!S.listeEventId || S.gruppi.length===0) return;
+  const nomi = S.gruppi.map((g,i)=>`${i+1}. ${g.name} (${(g.members||[]).length} membri)`).join('\n');
+  const inp  = prompt('Importa membri come ospiti.\n\nGruppi disponibili:\n'+nomi+'\n\nInserisci il numero del gruppo:');
+  const idx  = parseInt(inp)-1;
+  if(isNaN(idx)||idx<0||idx>=S.gruppi.length) return;
+  const g    = S.gruppi[idx];
+  const evtOspiti = (S.eventi.find(e=>e.id===S.listeEventId)?.ospiti)||[];
+  const nuovi = (g.members||[])
+    .filter(m => !evtOspiti.some(o => o.nome===m.name))
+    .map(m => ({id:uid(),nome:m.name,cognome:'',tel:m.phone||'',groupId:g.id,isVip:false,note:'',status:'attesa',ts:Date.now()}));
+  if(nuovi.length===0){ toast('Tutti i membri sono già in lista','info'); return; }
+  S.eventi = S.eventi.map(e => e.id!==S.listeEventId ? e : {...e,ospiti:[...(e.ospiti||[]),...nuovi]});
+  persist('prm_eventi',S.eventi); S.showOspiteForm=false; toast(`${nuovi.length} ospiti importati da "${g.name}"`); render();
+}
+
+function exportLista() {
+  const ev = S.eventi.find(x=>x.id===S.listeEventId); if(!ev) return;
+  const rows = [['Nome','Cognome','Telefono','Gruppo','VIP','Stato','Orario ingresso','Note']];
+  (ev.ospiti||[]).forEach(o=>{
+    const g = S.gruppi.find(x=>x.id===o.groupId);
+    rows.push([o.nome, o.cognome||'', o.tel||'', g?.name||'', o.isVip?'Sì':'No', o.status||'attesa', o.orarioIngresso||'', o.note||'']);
+  });
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a   = Object.assign(document.createElement('a'),{href:'data:text/csv;charset=utf-8,'+encodeURIComponent(csv),download:`lista_${isoDate(new Date())}_${esc(ev.name).replace(/[^a-z0-9]/gi,'_')}.csv`});
+  a.click(); toast('Lista esportata in CSV','info');
+}
+
+
+function renderPkgDashCard() {
+  const pkgs = S.pacchetti.filter(p => p.status === 'disponibile');
+  if(pkgs.length === 0) return '';
+  const rows = pkgs.slice(0,5).map(p => {
+    const ev = S.eventi.find(e => e.id === p.eventId);
+    const nP = S.prenotazioniPkg.filter(r => r.pacchettoId === p.id).length;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div><p class="font-medium" style="font-size:13px">${esc(p.nome)}</p><p class="text-dim text-sm">${ev?esc(ev.name):'—'}</p></div>
+      <div style="text-align:right"><p class="text-mono text-gold font-medium" style="font-size:13px">${eur(p.prezzoBase)}/p.</p><p class="text-dim text-sm">${nP} pren.</p></div>
+    </div>`;
+  }).join('');
+  return `<div class="card"><p class="card-title">Pacchetti attivi</p>${rows}</div>`;
+}
+
+/* ── Boot ─────────────────────────────────────────────────── */
+injectManifest();
+loadData();
+</script>
+</body>
+</html>
