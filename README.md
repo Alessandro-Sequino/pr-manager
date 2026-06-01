@@ -1,6 +1,7 @@
 # PR Manager 🎭
 
-> **EN** — A single-file web app (PWA) for managing nightclub PR work: guest groups, deposits, event check-in and statistics. No server, no install, works offline on any device.
+> **EN** — A single-file web app (PWA) for managing nightclub PR work: guest groups, deposits, event check-in and statistics.
+> No server, no install, works offline on any device.
 > 
 > Gestionale per PR di locali notturni e organizzatori di eventi.  
 > Gruppi clienti, acconti, check-in ospiti e pacchetti — tutto in un singolo file, senza installazioni.
