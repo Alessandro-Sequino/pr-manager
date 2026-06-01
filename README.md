@@ -12,6 +12,8 @@
 ---
 
 > 📸 **Demo live →** [Alessandro-Sequino.github.io/pr-manager](https://Alessandro-Sequino.github.io/pr-manager)
+> <img width="1916" height="965" alt="image" src="https://github.com/user-attachments/assets/568a479c-1b2d-429f-ba4b-6367ce2f52cb" />
+
 
 ---
 
